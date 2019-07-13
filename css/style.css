@@ -37,7 +37,6 @@ CSS TO MAKE THE EXAMPLE LOOK PRETTY
 }
 
 body {
-  background: #2980b9;
   color: #FFF;
   font-family: Helvetica;
   text-align: center;
@@ -47,9 +46,8 @@ body {
 header,
 nav,
 section {
-  border: 1px solid rgba(255,255,255,0.8);
   margin-bottom: 10px;
-  border-radius: 3px;
+ 
 }
 
 header {
