@@ -38,7 +38,7 @@ CSS TO MAKE THE EXAMPLE LOOK PRETTY
 
 body {
   color: #FFF;
-  font-family: Helvetica;
+  font-family: font-family: 'Oswald', sans-serif;
   text-align: center;
   margin: 0;
 }
@@ -47,6 +47,7 @@ header,
 nav,
 section {
   margin-bottom: 10px;
+  font-family: font-family: 'Oswald', sans-serif;
  
 }
 
