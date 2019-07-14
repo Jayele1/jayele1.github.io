@@ -58,3 +58,7 @@ header {
 nav, section {
   padding: 200px 0;
 }
+a {
+  text-decoration: none;
+}
+
