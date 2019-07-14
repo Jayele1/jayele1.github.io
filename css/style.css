@@ -11,13 +11,14 @@ header {
 	width: 960px;
 }
 
-nav, section, a {
+nav, section {
   float: left;
 }
 
 nav {
   width: 200px;
   margin-right: 10px;
+  margin-left: 50px;
 }
 
 section {
@@ -60,5 +61,21 @@ nav, section {
 }
 a {
   text-decoration: none;
+  color: black;
+  display: block;
+  text-align: left;
+}
+ul{
+  padding:10px;
+}
+li {
+  display: block;
+  padding:10px;
+}
+img {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  padding:25px;
 }
 
