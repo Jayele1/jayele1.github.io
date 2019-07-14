@@ -11,7 +11,7 @@ header {
 	width: 960px;
 }
 
-nav, section {
+nav, section, a {
   float: left;
 }
 
