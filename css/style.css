@@ -40,7 +40,6 @@ CSS TO MAKE THE EXAMPLE LOOK PRETTY
 body {
   color: #FFF;
   font-family: font-family: 'Oswald', sans-serif;
-  text-align: center;
   margin: 0;
 }
 
@@ -71,11 +70,17 @@ ul{
 li {
   display: block;
   padding:10px;
+  font-style: italic;
 }
 img {
   display: block;
   margin-left: auto;
   margin-right: auto;
-  padding:25px;
+  width:70%;
+}
+
+h1{
+  font-weight: bold;
+  font-size: 40px;
 }
 
