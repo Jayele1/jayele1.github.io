@@ -1,3 +1,10 @@
+div.tContent {
+  padding-top: 20px;
+	display: block;
+	margin-right: auto;
+	margin-left: auto;
+}
+
 body {
 max-width:750px;
 font-family:Inconsolata, monospace;
@@ -176,11 +183,4 @@ margin-top:20px;
     flex: 100%;
     max-width: 100%;
   }
-}
-
-.testContent {
-  padding-top: 20px;
-	display: block;
-	margin-right: auto;
-	margin-left: auto;
 }
