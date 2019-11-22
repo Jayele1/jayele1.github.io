@@ -1,3 +1,21 @@
+div.testContent {
+	display: block;
+	margin-right: auto;
+	margin-left: auto;
+}
+
+img {
+	display: block;
+	margin-right: auto;
+	margin-left: auto;
+}
+
+video {
+	display: block;
+	margin-right: auto;
+	margin-left: auto;
+}
+
 body {
 max-width:750px;
 font-family:Inconsolata, monospace;
@@ -8,6 +26,9 @@ padding-right:10px;
 background-color:#f7f7f7;
 color:#4d4d4d;
 margin:auto auto 50px;
+display: block;
+margin-right: auto;
+margin-left: auto;
 }
 
 p.description {
@@ -176,11 +197,4 @@ margin-top:20px;
     flex: 100%;
     max-width: 100%;
   }
-}
-
-.testContent {
-  padding-top: 20px;
-	display: block;
-	margin-right: auto;
-	margin-left: auto;
 }
