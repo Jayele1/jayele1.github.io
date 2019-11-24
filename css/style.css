@@ -16,6 +16,12 @@ video {
 	margin-left: auto;
 }
 
+iframe {
+	display: block;
+	margin-right: auto;
+	margin-left: auto;
+}
+
 body {
 max-width:750px;
 font-family:Inconsolata, monospace;
