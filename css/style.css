@@ -8,12 +8,18 @@ img {
 	display: block;
 	margin-right: auto;
 	margin-left: auto;
+	padding-top: 50px;
+	padding-bottom: 50px;
+	padding-right: 50px;
+	padding-left: 50px;
+
 }
 
 video {
 	display: block;
 	margin-right: auto;
 	margin-left: auto;
+	padding-top: 50px;
 }
 
 iframe {
@@ -62,12 +68,17 @@ padding-bottom:3px;
 }
 
 h3 {
+display:inline;
 font-size:18px;
 font-weight:500;
 margin-bottom:5px;
 font-family:Inconsolata, monospace;
 margin-top:0;
 color:#4d4d4d!important;
+}
+
+h4 {
+	display:inline;
 }
 
 p {
@@ -147,6 +158,7 @@ img.book {
 -moz-box-shadow:3px 3px 5px 6px #ccc;
 -webkit-box-shadow:3px 3px 5px 6px #ccc;
 box-shadow:3px 2px 2px 1px #ccc;
+border: 3px solid #000;
 }
 
 footer p {
