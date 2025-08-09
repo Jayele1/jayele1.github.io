@@ -1,93 +1,101 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Joseph Ayele</title>
+    <title>Joseph Ayele - Portfolio</title>
     <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon">
     <link rel="icon" href="img/favicon.ico" type="image/x-icon">
     <meta charset="utf-8">
-    <meta content="IE=edge" http-equiv="X-UA-Compatible">
-    <link href="https://fonts.googleapis.com/css?family=Inconsolata" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Joseph Ayele's personal portfolio showcasing creative projects, visualizations, paintings, and dreams">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;1,400&family=Source+Sans+Pro:wght@300;400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/responsive-nav.css">
-    <!-- Viewport scale on devices , target-densitydpi=device-dpi-->
-    <meta content="width=device-width, initial-scale=1, user-scalable=0" name=
-    "viewport">
-    <!--<script src="/sites/msnbc/modules/custom/pub_infographic/js/iframeResizer.contentWindow.min.js"></script>-->
 </head>
 <body>
-    <div id="description-row">
-        <h1><strong> Joseph Ayele </strong></h1>
-        <br>
-        <h4>Here are some things I worked on and wonder about</h4>
-        <h5>Also, here is a little more <a href="pages/aboutMe.html"><b><u>about me</u></b></a></h5>
-    </div>
-<!--  -->
-    <div id="work-row">
-      <div class="row">
-        <div class="column">
-          <div class='parent'>
-            <a href="pages/testing.html">
-                <img class='book' src=
-                "img/oHappy.gif" width="100%" height="100%">
-              </a>
-            </div>
-            <div class="detail">
-                <p class="pub">Testing</p>
-            </div>
+    <header class="hero">
+        <video class="hero-video" autoplay muted loop playsinline preload="metadata">
+            <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForestCampInCognitiveApplications.mp4" type="video/mp4">
+            <source src="https://sample-videos.com/zip/10mp4/mp4/SampleVideo_1280x720_5mb.mp4" type="video/mp4">
+            Your browser does not support the video tag. Please update your browser.
+        </video>
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1 class="hero-title">Joseph Ayele</h1>
+            <p class="hero-subtitle">Software Engineer & Creative</p>
+            <p class="hero-description">Here are some things I worked on and wonder about</p>
+            <a href="pages/aboutMe.html" class="cta-link">Learn more about me →</a>
         </div>
-        <div class="column">
-          <div class='parent'>
-            <a href="http://josephayele.com/PhoneUse/">
-                <img class='book' src=
-                "img/phone.png">
-              </a>
-            </div>
-            <div class="detail">
-                <p class="pub">Visualizing</p>
-            </div>
+        <div class="scroll-indicator">
+            <div class="scroll-arrow"></div>
         </div>
-    </div>
-    <div class="row">
-        <div class="column">
-          <div class='parent'>
-            <a href="https://www.instagram.com/joseph_m_ayele/">
-                <img class='book' src=
-                "img/open.jpg" height="100%" width="100%">
-              </a>
-            </div>
-            <div class="detail">
-                <p class="pub">Painting</p>
-            </div>
+    </header>
+
+    <main class="portfolio-grid">
+        <section class="project-card" data-category="testing">
+            <a href="pages/testing.html" class="project-link">
+                <div class="project-image">
+                    <img src="img/oHappy.gif" alt="Testing project showcase" loading="lazy">
+                </div>
+                <div class="project-info">
+                    <h3 class="project-title">Testing</h3>
+                    <p class="project-description">Experimental interactions and explorations</p>
+                </div>
+            </a>
+        </section>
+
+        <section class="project-card" data-category="visualization">
+            <a href="http://josephayele.com/PhoneUse/" class="project-link">
+                <div class="project-image">
+                    <img src="img/phone.png" alt="Phone usage visualization" loading="lazy">
+                </div>
+                <div class="project-info">
+                    <h3 class="project-title">Visualizing</h3>
+                    <p class="project-description">Data stories through interactive design</p>
+                </div>
+            </a>
+        </section>
+
+        <section class="project-card" data-category="art">
+            <a href="https://www.instagram.com/jayele___/" class="project-link">
+                <div class="project-image">
+                    <img src="img/open.jpg" alt="Painting and artwork" loading="lazy">
+                </div>
+                <div class="project-info">
+                    <h3 class="project-title">Painting</h3>
+                    <p class="project-description">Visual expressions and artistic endeavors</p>
+                </div>
+            </a>
+        </section>
+
+        <section class="project-card" data-category="dreams">
+            <a href="pages/dreaming.html" class="project-link">
+                <div class="project-image">
+                    <img src="img/OldHome.jpg" alt="Dreams and aspirations" loading="lazy">
+                </div>
+                <div class="project-info">
+                    <h3 class="project-title">Dreaming</h3>
+                    <p class="project-description">Reflections and future visions</p>
+                </div>
+            </a>
+        </section>
+    </main>
+    <nav class="social-nav">
+        <a href="https://www.linkedin.com/in/joseph-ayele-7393a537/" target="_blank" rel="noopener noreferrer" class="social-link">
+            <span class="social-text">LinkedIn</span>
+        </a>
+        <a href="mailto:josephayele@gmail.com" class="social-link">
+            <span class="social-text">Email</span>
+        </a>
+    </nav>
+
+    <footer class="site-footer">
+        <div class="footer-content">
+            <p>&copy; 2025 Joseph Ayele • Crafted with curiosity</p>
         </div>
-        <div class="column">
-          <div class='parent'>
-                <img class='book' src=
-                "img/OldHome.jpg" height="100%" width="100%">
-            </div>
-            <div class="detail">
-                <p class="pub">Dreaming</p>
-            </div>
-        </div>
-      </div>
-      <nav class="nav-collapse">
-        <ul>
-          <li><a href="https://www.linkedin.com/in/joseph-ayele-7393a537/" target="_blank"><strong>LinkedIn</strong></a></li>
-          <li><a href="mailto:josephayele@gmail.com"><strong>Email</strong></a></li>
-        </ul>
-      </nav>
-    <footer>
-      <div class="container">
-        <p style="text-align:center;">
-          <br>
-          &copy; Updated June 2019 by JA
-        </p>
-      </div>
     </footer>
-    <!-- JavaScript libraries here -->
+
     <script src="js/index.js"></script>
     <script src="js/responsive-nav.min.js"></script>
-    <script>
-      var nav = responsiveNav(".nav-collapse");
-    </script>
 </body>
 </html>
