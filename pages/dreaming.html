@@ -1,48 +1,49 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Joseph Ayele</title>
-    <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon">
-    <link rel="icon" href="img/favicon.ico" type="image/x-icon">
+    <title>Dreaming - Joseph Ayele</title>
+    <link rel="shortcut icon" href="../img/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="../img/favicon.ico" type="image/x-icon">
     <meta charset="utf-8">
-    <meta content="IE=edge" http-equiv="X-UA-Compatible">
-    <link href="https://fonts.googleapis.com/css?family=Inconsolata" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="Experimental interactions and voice recognition projects by Joseph Ayele">
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/responsive-nav.css">
-    <script type="text/javascript" src="../js/index.js"></script>
-    <!-- Viewport scale on devices , target-densitydpi=device-dpi-->
-    <meta content="width=device-width, initial-scale=1, user-scalable=0" name=
-    "viewport">
-    <!--<script src="/sites/msnbc/modules/custom/pub_infographic/js/iframeResizer.contentWindow.min.js"></script>-->
 </head>
 <body>
     <div id="description-row">
-        <a href="../index.html"><h1><strong> Joseph Ayele </strong></h1></a>
-        <h3><br>Hi, I'm Joseph Ayele. Currently I am a Senior Software Engineer in New York City.</h3>
+        <a href="../index.html"><h1><strong>Joseph Ayele</strong></h1></a>
 
+        <h3>Voice Interaction</h3>
+
+        <h4>
+            Experimenting with browser speech recognition APIs to create interactive experiences.
+        </h4>
     </div>
-<!--  -->
+
     <div id="work-row">
-      <div class="testContent">
-        <br>
-        <h4>Click on the button below and speak something...</h4>
-        <p><button type="button" onclick="runSpeechRecognition()">Go!</button> &nbsp; <span id="action"></span></p>
-        <div id="output" class="hide"></div>
+        <div class="testContent">
+            <h4>Click on the button below and speak something...</h4>
+            <p>
+                <button type="button" onclick="runSpeechRecognition()">Start Recording</button>
+                &nbsp;
+                <span id="action"></span>
+            </p>
+            <div id="output" class="hide"></div>
         </div>
-      </div>
+    </div>
+
     <footer>
-      <div class="container">
-        <p style="text-align:center;">
-          <br>
-          &copy; Updated June 2019 by JA
-        </p>
-      </div>
+        <div class="container">
+            <p>&copy; 2025 Joseph Ayele • Built with curiosity</p>
+        </div>
     </footer>
-    <!-- JavaScript libraries here -->
+
     <script src="../js/index.js"></script>
     <script src="../js/responsive-nav.min.js"></script>
     <script>
-      var nav = responsiveNav(".nav-collapse");
+        var nav = responsiveNav(".nav-collapse");
     </script>
 </body>
 </html>
