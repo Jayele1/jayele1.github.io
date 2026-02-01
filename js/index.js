@@ -7,8 +7,10 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function initScrollAnimations() {
+    // Lower threshold on mobile for better trigger points
+    const isMobile = window.innerWidth < 768;
     const observerOptions = {
-        threshold: 0.1,
+        threshold: isMobile ? 0.05 : 0.1,
         rootMargin: '0px 0px -50px 0px'
     };
 
@@ -32,16 +34,21 @@ function initScrollAnimations() {
 
 function initProjectCards() {
     const cards = document.querySelectorAll('.project-card');
-    
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
     cards.forEach(card => {
-        card.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-8px) scale(1.02)';
-        });
-        
-        card.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0) scale(1)';
-        });
-        
+        // Only add hover effects on non-touch devices
+        if (!isTouchDevice) {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-8px) scale(1.02)';
+            });
+
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0) scale(1)';
+            });
+        }
+
+        // Ripple effect works on all devices
         card.addEventListener('click', function(e) {
             const ripple = document.createElement('div');
             ripple.style.cssText = `
@@ -52,13 +59,13 @@ function initProjectCards() {
                 animation: ripple 0.6s linear;
                 pointer-events: none;
             `;
-            
+
             const rect = this.getBoundingClientRect();
             const size = Math.max(rect.width, rect.height);
             ripple.style.width = ripple.style.height = size + 'px';
             ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
             ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
-            
+
             this.appendChild(ripple);
             setTimeout(() => ripple.remove(), 600);
         });
@@ -160,6 +167,27 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+// Debounced resize handler for responsive adjustments
+let resizeTimer;
+let previousWidth = window.innerWidth;
+
+window.addEventListener('resize', function() {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+        const currentWidth = window.innerWidth;
+        const crossedBreakpoint =
+            (previousWidth < 1024 && currentWidth >= 1024) ||
+            (previousWidth >= 1024 && currentWidth < 1024);
+
+        if (crossedBreakpoint) {
+            // Reinitialize animations when crossing desktop breakpoint
+            initScrollAnimations();
+        }
+
+        previousWidth = currentWidth;
+    }, 250);
+});
 
 function runSpeechRecognition() {
     const output = document.getElementById("output");

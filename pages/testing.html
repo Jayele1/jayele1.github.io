@@ -29,7 +29,7 @@
     <div id="work-row">
         <div class="testContent">
             <a href="https://github.com/Jayele1/HappyDay" target="_blank" rel="noopener noreferrer">
-                <img src="../img/HappyDayTest.png" alt="Happy Day Test Screenshot" style="width: 85%; max-width: 700px;">
+                <img src="../img/HappyDayTest.png" alt="Happy Day Test Screenshot" style="width: 85%; max-width: 700px;" loading="lazy">
                 <h2>Happy Day Repo</h2>
             </a>
         </div>
@@ -37,10 +37,12 @@
         <div class="testContent">
             <h4>Check out the video below to see it run!</h4>
             <br>
-            <video width="100%" height="100%" controls style="max-width: 700px;">
-                <source src="../img/HapD.mp4" type="video/mp4">
-                Your browser does not support the video tag.
-            </video>
+            <div class="responsive-embed" style="max-width: 700px; margin: 0 auto;">
+                <video controls preload="metadata">
+                    <source src="../img/HapD.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
         </div>
     </div>
 
