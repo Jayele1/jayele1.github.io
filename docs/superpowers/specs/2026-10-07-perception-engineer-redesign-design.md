@@ -48,9 +48,12 @@ hardcoded sizing at the 1024px+ breakpoint) linking to `pages/testing.html`,
   changes from "Senior Software Engineer" to a dual-signal line, e.g. *"Software Engineer,
   building toward perception"* — exact wording may be tuned once in place, but it must not
   claim perception engineering as a current title.
-- **New project card** on the homepage grid, named **"Perceiving"** (matches the existing
-  gerund naming pattern: Testing, Visualizing, Painting, Dreaming), linking to
-  `pages/perceiving.html`.
+- **New project card** on the homepage grid, named **"Perceiving"** — a gerund in the site's
+  established voice (echoing "Testing"). Note: after this spec was written, an upstream commit
+  renamed the other three existing cards (Visualizing → Data Stories, Painting → Visuals,
+  Dreaming → Reflections), so the gerund pattern now only holds between "Testing" and
+  "Perceiving" — the name still stands on its own merits as a clear, evocative title for a
+  live-perception feature, linking to `pages/perceiving.html`.
 - Placement: "Perceiving" takes the **largest/first slot** in the desktop asymmetric grid
   (the slot currently held by "Testing"), since it's the flagship evidence for the new
   positioning. The other four cards keep their existing copy, links, and relative styling.

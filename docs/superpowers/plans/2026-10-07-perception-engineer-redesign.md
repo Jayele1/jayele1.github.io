@@ -15,8 +15,8 @@
 - No backend/server component — GitHub Pages static hosting only.
 - No build step — plain `<script>`/`<link>` tags only, matching the existing site. No npm/package.json introduced.
 - No new fonts. All colors must reuse the existing CSS custom properties defined in `:root` in `css/style.css` (e.g. `--warm-brown`, `--soft-cream`, `--accent-color`, `--primary-text`) — add at most one new custom property only if genuinely needed for contrast against live video.
-- The four existing projects (Testing, Visualizing, Painting, Dreaming) keep their existing copy, links, and markup unchanged — only their position in the DOM/grid shifts.
-- The new page is named **"Perceiving"** (gerund, matching the existing Testing/Visualizing/Painting/Dreaming naming pattern).
+- The four existing projects (currently titled Testing, Data Stories, Visuals, Reflections — renamed from Testing/Visualizing/Painting/Dreaming by an upstream commit after the spec was written) keep their existing copy, links, and markup unchanged — only their position in the DOM/grid shifts.
+- The new page is named **"Perceiving"** — a gerund in the site's established voice; it no longer needs to match all four sibling titles exactly (only "Testing" is still a gerund after the rename above), but stands on its own as a clear, evocative name for a live-perception feature.
 - The intro screen must explicitly state that video is processed entirely on-device and is never recorded or transmitted — this must be literally true of the implementation.
 - The header tagline must not state "Perception Engineer" as a current job title — it signals direction, not a current role (dual-signal copy, per spec).
 - MediaPipe/model URLs are pinned to specific versions (not `@latest`) for stability: `@mediapipe/tasks-vision@1.1.0`, model at `https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/float16/1/efficientdet_lite0.tflite` (both verified reachable as of 2026-10-07).
@@ -61,13 +61,13 @@ to:
 Change:
 
 ```html
-<meta name="description" content="Joseph Ayele's personal portfolio showcasing creative projects, visualizations, paintings, and dreams">
+<meta name="description" content="Joseph Ayele's personal portfolio showcasing creative projects, data stories, visual art, and reflections">
 ```
 
 to:
 
 ```html
-<meta name="description" content="Joseph Ayele's personal portfolio showcasing creative projects, visualizations, paintings, dreams, and live perception experiments">
+<meta name="description" content="Joseph Ayele's personal portfolio showcasing creative projects, data stories, visual art, reflections, and live perception experiments">
 ```
 
 - [ ] **Step 3: Update the header tagline**
@@ -513,10 +513,10 @@ with:
 
 Open `http://localhost:8787/index.html` and check, resizing the Browser pane (or using viewport emulation) at roughly 375px (mobile), 800px (tablet), 1100px (desktop), and 1300px (large desktop):
 - Mobile/tablet (<1024px): five cards stack/wrap without any CSS change needed at those breakpoints — confirm no overlap and that the new Perceiving card (with its gradient + corner brackets + moving scan line) renders first, above Testing.
-- 1024px+: Perceiving is visibly the largest card, occupying the left ~4/6 of the grid across both rows; Testing and Visualizing sit top-right, Painting and Dreaming sit bottom-right; no cards overlap; no horizontal scrollbar appears.
+- 1024px+: Perceiving is visibly the largest card, occupying the left ~4/6 of the grid across both rows; Testing and Data Stories sit top-right, Visuals and Reflections sit bottom-right; no cards overlap; no horizontal scrollbar appears.
 - 1200px+: layout holds, project-info caption offsets don't clip or overlap neighboring cards.
 - Click the Perceiving card: confirm it attempts to navigate to `pages/perceiving.html` (expected to 404 until Task 4 — that's fine for this task).
-- Click Testing, Visualizing, Painting, Dreaming cards: confirm all four still link and render exactly as before.
+- Click Testing, Data Stories, Visuals, Reflections cards: confirm all four still link and render exactly as before.
 
 - [ ] **Step 6: Commit**
 
@@ -1169,7 +1169,7 @@ git commit -m "Add mobile front/rear camera flip to Perceiving page"
 With the local server running, open `http://localhost:8787/index.html` and check at mobile (~375px), tablet (~800px), desktop (~1100px), and large desktop (~1300px) widths:
 - Five cards render with no overlap and no horizontal scrollbar at any width.
 - Perceiving is visually the most prominent card at 1024px+ (largest, first).
-- All five cards link correctly: Perceiving → `pages/perceiving.html`, Testing → `pages/testing.html`, Visualizing → `http://josephayele.com/PhoneUse/`, Painting → the Instagram link, Dreaming → `pages/dreaming.html`.
+- All five cards link correctly: Perceiving → `pages/perceiving.html`, Testing → `pages/testing.html`, Data Stories → `http://josephayele.com/PhoneUse/`, Visuals → the Instagram link, Reflections → `pages/dreaming.html`.
 
 - [ ] **Step 2: Verify the four pre-existing inner pages are unchanged**
 
