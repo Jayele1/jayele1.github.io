@@ -74,6 +74,24 @@ async function beginDetectionLoop(stream) {
   requestAnimationFrame(detectFrame);
 }
 
+function flipCamera() {
+  currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+
+  if (currentStream) {
+    currentStream.getTracks().forEach((track) => track.stop());
+  }
+
+  requestCameraStream(currentFacingMode)
+    .then((stream) => {
+      currentStream = stream;
+      videoEl.srcObject = stream;
+      stageEl.classList.toggle('perceiving-mirrored', currentFacingMode === 'user');
+      return videoEl.play();
+    })
+    .then(resizeCanvasToVideo)
+    .catch((err) => showFallback(describeCameraError(err)));
+}
+
 function resizeCanvasToVideo() {
   canvasEl.width = videoEl.videoWidth || videoEl.clientWidth;
   canvasEl.height = videoEl.videoHeight || videoEl.clientHeight;
@@ -170,6 +188,7 @@ function pluralize(name) {
 
 function initPerceivingPage() {
   startBtn.addEventListener('click', startPerceiving);
+  flipBtn.addEventListener('click', flipCamera);
 }
 
 document.addEventListener('DOMContentLoaded', initPerceivingPage);
