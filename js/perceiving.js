@@ -17,6 +17,7 @@ const WASM_FILESET_PATH = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@
 let currentFacingMode = 'user';
 let currentStream = null;
 let objectDetector = null;
+let captionDebounceTimer = null;
 
 function showFallback(message) {
   introEl.classList.add('hide');
@@ -97,6 +98,7 @@ function detectFrame(timestampMs) {
 
   const result = objectDetector.detectForVideo(videoEl, timestampMs);
   drawDetections(result.detections);
+  scheduleCaptionUpdate(result.detections);
   requestAnimationFrame(detectFrame);
 }
 
@@ -119,6 +121,51 @@ function drawDetections(detections) {
     ctx.fillStyle = '#ede8e1';
     ctx.fillText(label, box.originX + 5, box.originY - 6);
   });
+}
+
+function scheduleCaptionUpdate(detections) {
+  clearTimeout(captionDebounceTimer);
+  captionDebounceTimer = setTimeout(() => {
+    captionEl.textContent = buildCaptionText(detections);
+  }, 700);
+}
+
+function buildCaptionText(detections) {
+  if (detections.length === 0) {
+    return "Looking for something to see...";
+  }
+
+  const counts = new Map();
+  detections.forEach((detection) => {
+    const name = detection.categories[0].categoryName;
+    counts.set(name, (counts.get(name) || 0) + 1);
+  });
+
+  const parts = Array.from(counts.entries()).map(([name, count]) => formatCount(name, count));
+
+  if (parts.length === 1) {
+    return `I see ${parts[0]}.`;
+  }
+
+  if (parts.length === 2) {
+    return `I see ${parts[0]} and ${parts[1]}.`;
+  }
+
+  const last = parts.pop();
+  return `I see ${parts.join(', ')}, and ${last}.`;
+}
+
+function formatCount(name, count) {
+  if (count === 1) {
+    return /^[aeiou]/i.test(name) ? `an ${name}` : `a ${name}`;
+  }
+  return `${count} ${pluralize(name)}`;
+}
+
+function pluralize(name) {
+  if (name === 'person') return 'people';
+  if (name.endsWith('s')) return name;
+  return `${name}s`;
 }
 
 function initPerceivingPage() {
