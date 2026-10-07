@@ -184,6 +184,40 @@ body {
   transform: scale(1.02);
 }
 
+/* Perception accent: corner brackets + scanning visual (no photo needed) */
+.corner-bracket {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--soft-cream);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.corner-bracket--tl { top: 10px; left: 10px; border-right: none; border-bottom: none; }
+.corner-bracket--tr { top: 10px; right: 10px; border-left: none; border-bottom: none; }
+.corner-bracket--bl { bottom: 10px; left: 10px; border-right: none; border-top: none; }
+.corner-bracket--br { bottom: 10px; right: 10px; border-left: none; border-top: none; }
+
+.project-image--perceiving {
+  background: linear-gradient(135deg, var(--warm-brown) 0%, var(--primary-text) 100%);
+}
+
+.perceiving-scan {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--soft-cream);
+  opacity: 0.55;
+  animation: perceiving-scan-move 3.5s ease-in-out infinite;
+}
+
+@keyframes perceiving-scan-move {
+  0%, 100% { top: 12%; }
+  50% { top: 88%; }
+}
+
 .project-info {
   position: relative;
   background: transparent;
@@ -575,34 +609,42 @@ footer p {
 /* 1024px+ : Desktop / Tablet Landscape */
 @media (min-width: 1024px) {
   .portfolio-grid {
-    grid-template-columns: 2fr 1fr;
-    grid-template-rows: 1fr 2fr;
-    gap: 5rem 0.5rem;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    grid-template-rows: repeat(2, auto);
+    grid-template-areas:
+      "perceiving perceiving perceiving perceiving testing visualizing"
+      "perceiving perceiving perceiving perceiving painting dreaming";
+    gap: 5rem 2rem;
     padding: 3rem 2rem 7rem 2rem;
-    justify-items: start;
+    justify-items: stretch;
+    align-items: start;
   }
 
   .project-card {
     padding: 22px;
     border-width: 10px;
+    max-width: none;
+    width: 100%;
   }
 
-  /* Reintroduce asymmetric card sizing */
+  /* Perceiving: the flagship card, largest and first */
   .project-card:nth-child(1) {
+    grid-area: perceiving;
     padding: 28px;
     border-width: 12px;
-    max-width: 450px;
   }
 
   .project-card:nth-child(1) .project-image {
-    height: 280px;
+    height: 320px;
   }
 
   .project-card:nth-child(2) {
-    padding: 18px;
-    border-width: 9px;
+    grid-area: testing;
     max-width: 280px;
     justify-self: end;
+    padding: 18px;
+    border-width: 9px;
   }
 
   .project-card:nth-child(2) .project-image {
@@ -610,27 +652,39 @@ footer p {
   }
 
   .project-card:nth-child(3) {
+    grid-area: visualizing;
+    max-width: 250px;
     padding: 22px;
     border-width: 8px;
-    max-width: 250px;
   }
 
   .project-card:nth-child(3) .project-image {
-    height: 300px;
+    height: 220px;
   }
 
   .project-card:nth-child(4) {
-    padding: 32px;
-    border-width: 14px;
-    max-width: 380px;
+    grid-area: painting;
+    max-width: 280px;
     justify-self: end;
+    padding: 18px;
+    border-width: 9px;
   }
 
   .project-card:nth-child(4) .project-image {
-    height: 320px;
+    height: 200px;
   }
 
-  /* Carefully reintroduce absolute positioning with safer values */
+  .project-card:nth-child(5) {
+    grid-area: dreaming;
+    max-width: 380px;
+    padding: 32px;
+    border-width: 14px;
+  }
+
+  .project-card:nth-child(5) .project-image {
+    height: 260px;
+  }
+
   .project-info {
     position: absolute;
     bottom: -110px;
@@ -642,7 +696,7 @@ footer p {
 
   .project-card:nth-child(1) .project-info {
     bottom: -110px;
-    max-width: 350px;
+    max-width: 420px;
     right: -15px;
   }
 
@@ -659,6 +713,12 @@ footer p {
   }
 
   .project-card:nth-child(4) .project-info {
+    bottom: -100px;
+    max-width: 240px;
+    right: 0;
+  }
+
+  .project-card:nth-child(5) .project-info {
     bottom: -110px;
     max-width: 300px;
     right: 0;
@@ -672,26 +732,19 @@ footer p {
 /* 1200px+ : Large Desktop */
 @media (min-width: 1200px) {
   .portfolio-grid {
-    gap: 6rem 0.5rem;
+    gap: 6rem 2rem;
     padding: 3rem 2rem 8rem 2rem;
   }
 
-  /* Original full design with larger variations */
-  .project-info {
-    bottom: -120px;
-  }
-
   .project-card:nth-child(1) .project-info {
-    bottom: -120px;
     right: -20px;
   }
 
   .project-card:nth-child(3) .project-info {
-    bottom: -130px;
     right: -30px;
   }
 
-  .project-card:nth-child(4) .project-info {
-    bottom: -125px;
+  .project-card:nth-child(5) .project-info {
+    right: -10px;
   }
 }
