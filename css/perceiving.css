@@ -91,12 +91,17 @@
   height: 100%;
 }
 
-.perceiving-video {
+/* The canvas is a replaced element, so it honours object-fit. It must match
+   the video's `cover` exactly: with the default `fill` the two scale by
+   different factors and the detection boxes drift off the video content. */
+.perceiving-video,
+.perceiving-canvas {
   object-fit: cover;
 }
 
-.perceiving-mirrored .perceiving-video,
-.perceiving-mirrored .perceiving-canvas {
+/* Only the video is mirrored. Mirroring the canvas would also mirror every
+   drawn label, so drawDetections() flips the box X coordinates instead. */
+.perceiving-mirrored .perceiving-video {
   transform: scaleX(-1);
 }
 
