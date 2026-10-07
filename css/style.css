@@ -702,18 +702,22 @@ footer p {
 
   .project-card:nth-child(2) .project-info {
     bottom: -100px;
+    width: 240px;
     max-width: 240px;
     right: 0;
   }
 
   .project-card:nth-child(3) .project-info {
-    bottom: -70px;
-    max-width: 220px;
+    bottom: -83px;
+    width: 170px;
+    max-width: 170px;
+    padding-top: 12px;
     right: -20px;
   }
 
   .project-card:nth-child(4) .project-info {
     bottom: -100px;
+    width: 240px;
     max-width: 240px;
     right: 0;
   }
