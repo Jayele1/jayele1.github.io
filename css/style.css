@@ -701,9 +701,10 @@ footer p {
   }
 
   .project-card:nth-child(2) .project-info {
-    bottom: -100px;
-    width: 240px;
-    max-width: 240px;
+    bottom: -105px;
+    width: 140px;
+    max-width: 140px;
+    padding-top: 6px;
     right: 0;
   }
 
