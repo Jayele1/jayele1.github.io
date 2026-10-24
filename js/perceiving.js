@@ -10,6 +10,7 @@ const panesContainer = document.getElementById('perceiving-panes');
 const ZOOM_STEP = 2.2;
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 24;
+const MAX_PANES = 4;
 
 let currentFacingMode = 'user';
 let currentStream = null;
@@ -132,11 +133,9 @@ function createPane(zoom, center) {
 
   panesContainer.appendChild(paneEl);
   panes.push(pane);
+  panesContainer.dataset.count = String(panes.length);
   resizePaneCanvas(pane);
   updatePaneLabel(pane);
-
-  // Keep the newest pane in view as the filmstrip grows wider than the screen.
-  paneEl.scrollIntoView({ behavior: 'smooth', inline: 'end', block: 'nearest' });
 
   return pane;
 }
@@ -147,6 +146,7 @@ function truncatePanesAfter(index) {
     pane.resizeObserver.disconnect();
     pane.el.remove();
   }
+  panesContainer.dataset.count = String(panes.length);
 }
 
 function resizePaneCanvas(pane) {
@@ -221,11 +221,20 @@ function handlePaneClick(pane, e) {
   const { lx, ly } = localPointFromEvent(pane, e);
   const point = paneLocalToVideoNormalized(pane, lx, ly);
 
-  // Clicking any pane continues the chain from there, dropping whatever
+  // Clicking any pane continues the grid from there, dropping whatever
   // deeper panes existed after it.
   truncatePanesAfter(pane.index);
   const nextZoom = clamp(pane.zoom * ZOOM_STEP, MIN_ZOOM, MAX_ZOOM);
-  createPane(nextZoom, point);
+
+  if (panes.length < MAX_PANES) {
+    createPane(nextZoom, point);
+  } else {
+    // The grid is already full four squares - clicking its last pane zooms
+    // further into it in place instead of trying to add a fifth.
+    pane.zoom = nextZoom;
+    pane.center = point;
+    updatePaneLabel(pane);
+  }
 }
 
 function handlePaneWheel(pane, e) {

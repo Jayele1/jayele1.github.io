@@ -101,25 +101,44 @@
   left: -9999px;
 }
 
+/* A 2x2 grid capped at 4 panes, not an open-ended row: the 1px gap (filled
+   by the container's own background) draws as a divider between cells in
+   both directions at once, so the view actually splits horizontally *and*
+   vertically instead of only ever gaining more side-by-side columns. */
 .perceiving-panes {
   position: absolute;
   inset: 0;
-  display: flex;
-  overflow-x: auto;
-  overflow-y: hidden;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+  gap: 1px;
+  background: rgba(94, 255, 192, 0.3);
+}
+
+.perceiving-panes[data-count="2"] {
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr;
+}
+
+.perceiving-panes[data-count="3"],
+.perceiving-panes[data-count="4"] {
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+
+/* With 3 panes the first one still fills a whole column (tall), while the
+   other two auto-place into the remaining two cells on the right - that's
+   the moment the grid first splits vertically as well as horizontally. At
+   4 it reverts to an even 2x2 and every pane is one cell. */
+.perceiving-panes[data-count="3"] .perceiving-pane[data-pane-index="0"] {
+  grid-row: 1 / 3;
 }
 
 .perceiving-pane {
   position: relative;
-  flex: 1 0 220px;
-  min-width: 220px;
   overflow: hidden;
   background: #000;
   cursor: zoom-in;
-}
-
-.perceiving-pane + .perceiving-pane {
-  border-left: 1px solid rgba(94, 255, 192, 0.3);
 }
 
 .perceiving-pane-canvas {
