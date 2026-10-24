@@ -162,6 +162,37 @@
   pointer-events: none;
 }
 
+.perceiving-pane-swatch {
+  position: absolute;
+  bottom: 0.85rem;
+  right: 0.85rem;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(94, 255, 192, 0.3);
+  border-radius: 6px;
+  padding: 0.35rem 0.5rem;
+  pointer-events: none;
+}
+
+.perceiving-pane-swatch-color {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: #000;
+  flex-shrink: 0;
+}
+
+.perceiving-pane-swatch-code {
+  font-family: 'Share Tech Mono', 'Courier New', monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  color: #e8e4dc;
+}
+
 .perceiving-pane-close {
   position: absolute;
   top: 0.6rem;

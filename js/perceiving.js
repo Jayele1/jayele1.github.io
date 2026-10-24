@@ -11,6 +11,16 @@ const ZOOM_STEP = 2.2;
 const MIN_ZOOM = 1;
 const MAX_ZOOM = 24;
 const MAX_PANES = 4;
+const SWATCH_UPDATE_EVERY_N_FRAMES = 12;
+
+// One shared 1x1 canvas for every pane's color sample: drawing a crop into
+// it scaled down to a single pixel is a cheap, standard way to get that
+// crop's average color (the browser's own downscale filtering does the
+// averaging), and reusing one canvas avoids allocating N of them.
+const sampleCanvas = document.createElement('canvas');
+sampleCanvas.width = 1;
+sampleCanvas.height = 1;
+const sampleCtx = sampleCanvas.getContext('2d', { willReadFrequently: true });
 
 let currentFacingMode = 'user';
 let currentStream = null;
@@ -101,11 +111,24 @@ function createPane(zoom, center) {
   label.className = 'perceiving-pane-label';
   paneEl.appendChild(label);
 
+  const swatch = document.createElement('div');
+  swatch.className = 'perceiving-pane-swatch';
+  const swatchColor = document.createElement('span');
+  swatchColor.className = 'perceiving-pane-swatch-color';
+  const swatchCode = document.createElement('span');
+  swatchCode.className = 'perceiving-pane-swatch-code';
+  swatchCode.textContent = '#------';
+  swatch.appendChild(swatchColor);
+  swatch.appendChild(swatchCode);
+  paneEl.appendChild(swatch);
+
   const pane = {
     el: paneEl,
     canvas,
     ctx: canvas.getContext('2d'),
     label,
+    swatchColor,
+    swatchCode,
     zoom,
     center,
     index
@@ -279,9 +302,36 @@ function drawPaneFrame(pane) {
   ctx.restore();
 }
 
+function toHex(r, g, b) {
+  return '#' + [r, g, b].map((v) => v.toString(16).padStart(2, '0')).join('').toUpperCase();
+}
+
+function updatePaneSwatch(pane) {
+  const rect = getPaneCropRect(pane);
+  if (!rect) return;
+
+  sampleCtx.drawImage(videoEl, rect.sx, rect.sy, rect.srcW, rect.srcH, 0, 0, 1, 1);
+  const [r, g, b] = sampleCtx.getImageData(0, 0, 1, 1).data;
+  const hex = toHex(r, g, b);
+
+  pane.swatchColor.style.backgroundColor = hex;
+  pane.swatchCode.textContent = hex;
+}
+
+let swatchFrameCounter = 0;
+
 function renderPanes() {
   if (videoEl.readyState >= 2 && videoEl.videoWidth) {
     panes.forEach(drawPaneFrame);
+
+    // The average-color readout doesn't need to track every frame, and
+    // getImageData forces a GPU-to-CPU readback, so it runs on its own,
+    // much slower tick instead of every one of the 60fps draws above.
+    swatchFrameCounter++;
+    if (swatchFrameCounter >= SWATCH_UPDATE_EVERY_N_FRAMES) {
+      swatchFrameCounter = 0;
+      panes.forEach(updatePaneSwatch);
+    }
   }
   requestAnimationFrame(renderPanes);
 }
