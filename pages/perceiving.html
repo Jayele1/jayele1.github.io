@@ -7,7 +7,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="description" content="A live camera feed that detects and names what it sees, running entirely in your browser">
+    <meta name="description" content="A live camera feed you can click into and zoom, pane by pane, running entirely in your browser">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/style.css">
     <link rel="stylesheet" href="../css/perceiving.css">
 </head>
@@ -15,20 +18,19 @@
     <div id="perceiving-intro" class="perceiving-intro">
         <a href="../index.html" class="perceiving-home-link"><strong>Joseph Ayele</strong></a>
         <h1>Perceiving</h1>
-        <p>This page turns on your camera and names what it sees, live, right here in your browser.</p>
+        <p>This page turns on your camera, live, right here in your browser. Click into the feed to zoom in, and keep clicking to zoom further.</p>
         <p class="perceiving-privacy-note">Nothing is recorded or sent anywhere. Every frame is processed on your device and never leaves it.</p>
         <button type="button" id="perceiving-start-btn" class="perceiving-start-btn">Start</button>
     </div>
 
     <div id="perceiving-stage" class="perceiving-stage hide">
         <video id="perceiving-video" class="perceiving-video" autoplay playsinline muted></video>
-        <canvas id="perceiving-canvas" class="perceiving-canvas"></canvas>
+        <div id="perceiving-panes" class="perceiving-panes"></div>
         <button type="button" id="perceiving-flip-btn" class="perceiving-flip-btn" aria-label="Switch camera">
             <span class="corner-bracket corner-bracket--tl" aria-hidden="true"></span>
             <span class="corner-bracket corner-bracket--br" aria-hidden="true"></span>
         </button>
         <a href="../index.html" class="perceiving-home-link perceiving-home-link--stage"><strong>Joseph Ayele</strong></a>
-        <div id="perceiving-caption" class="perceiving-caption-bar"></div>
     </div>
 
     <div id="perceiving-fallback" class="perceiving-fallback hide">

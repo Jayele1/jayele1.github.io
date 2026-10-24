@@ -1,5 +1,3 @@
-const TASKS_VISION_MODULE = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.1.0";
-
 const introEl = document.getElementById('perceiving-intro');
 const stageEl = document.getElementById('perceiving-stage');
 const fallbackEl = document.getElementById('perceiving-fallback');
@@ -7,18 +5,19 @@ const fallbackMessageEl = document.getElementById('perceiving-fallback-message')
 const startBtn = document.getElementById('perceiving-start-btn');
 const flipBtn = document.getElementById('perceiving-flip-btn');
 const videoEl = document.getElementById('perceiving-video');
-const canvasEl = document.getElementById('perceiving-canvas');
-const captionEl = document.getElementById('perceiving-caption');
-const ctx = canvasEl.getContext('2d');
+const panesContainer = document.getElementById('perceiving-panes');
 
-const MODEL_ASSET_PATH = "https://storage.googleapis.com/mediapipe-models/object_detector/efficientdet_lite0/float16/1/efficientdet_lite0.tflite";
-const WASM_FILESET_PATH = "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@1.1.0/wasm";
+const ZOOM_STEP = 2.2;
+const MIN_ZOOM = 1;
+const MAX_ZOOM = 24;
 
 let currentFacingMode = 'user';
 let currentStream = null;
-let objectDetector = null;
-let captionThrottleTimer = null;
-let latestDetections = [];
+let panes = [];
+
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
 
 function showFallback(message) {
   introEl.classList.add('hide');
@@ -35,9 +34,6 @@ function requestCameraStream(facingMode) {
 }
 
 function describeCameraError(err) {
-  if (err && err.message === 'MODEL_LOAD_FAILED') {
-    return "Couldn't load the detection model. Check your connection and reload the page to try again.";
-  }
   if (err && err.name === 'NotAllowedError') {
     return "Camera access was denied. Allow camera access and reload the page to try again.";
   }
@@ -59,27 +55,13 @@ async function startPerceiving() {
     introEl.classList.add('hide');
     stageEl.classList.remove('hide');
     stageEl.classList.toggle('perceiving-mirrored', currentFacingMode === 'user');
-    await beginDetectionLoop(stream);
+    videoEl.srcObject = stream;
+    await videoEl.play();
+    createPane(MIN_ZOOM, { x: 0.5, y: 0.5 });
+    requestAnimationFrame(renderPanes);
   } catch (err) {
     showFallback(describeCameraError(err));
   }
-}
-
-async function beginDetectionLoop(stream) {
-  videoEl.srcObject = stream;
-  await videoEl.play();
-  resizeCanvasToVideo();
-  window.addEventListener('resize', resizeCanvasToVideo);
-
-  if (!objectDetector) {
-    try {
-      objectDetector = await loadObjectDetector();
-    } catch (err) {
-      throw new Error('MODEL_LOAD_FAILED');
-    }
-  }
-
-  requestAnimationFrame(detectFrame);
 }
 
 function flipCamera() {
@@ -96,160 +78,214 @@ function flipCamera() {
       stageEl.classList.toggle('perceiving-mirrored', currentFacingMode === 'user');
       return videoEl.play();
     })
-    .then(resizeCanvasToVideo)
     .catch((err) => showFallback(describeCameraError(err)));
 }
 
-function resizeCanvasToVideo() {
-  canvasEl.width = videoEl.videoWidth || videoEl.clientWidth;
-  canvasEl.height = videoEl.videoHeight || videoEl.clientHeight;
-}
+/* Each pane is an independent read of the *same* shared video element - a
+   zoom factor plus a center point, both expressed in the original video's
+   normalized (0-1) coordinate space. That keeps panes decoupled: zooming or
+   closing one never has to walk or recompute any of the others. */
+function createPane(zoom, center) {
+  const index = panes.length;
 
-async function loadObjectDetector() {
-  // Imported lazily so a CDN outage can't stop this module from executing.
-  // A static top-level import would take the Start button's click listener
-  // down with it, leaving a button that silently does nothing.
-  const { ObjectDetector, FilesetResolver } = await import(TASKS_VISION_MODULE);
-  const vision = await FilesetResolver.forVisionTasks(WASM_FILESET_PATH);
-  return ObjectDetector.createFromOptions(vision, {
-    baseOptions: {
-      modelAssetPath: MODEL_ASSET_PATH
-    },
-    scoreThreshold: 0.5,
-    runningMode: "VIDEO"
-  });
-}
+  const paneEl = document.createElement('div');
+  paneEl.className = 'perceiving-pane';
+  paneEl.dataset.paneIndex = String(index);
 
-function detectFrame(timestampMs) {
-  if (!objectDetector || videoEl.readyState < 2) {
-    requestAnimationFrame(detectFrame);
-    return;
+  const canvas = document.createElement('canvas');
+  canvas.className = 'perceiving-pane-canvas';
+  paneEl.appendChild(canvas);
+
+  const label = document.createElement('span');
+  label.className = 'perceiving-pane-label';
+  paneEl.appendChild(label);
+
+  const pane = {
+    el: paneEl,
+    canvas,
+    ctx: canvas.getContext('2d'),
+    label,
+    zoom,
+    center,
+    index
+  };
+
+  if (index > 0) {
+    const closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.className = 'perceiving-pane-close';
+    closeBtn.setAttribute('aria-label', 'Close this zoom level');
+    closeBtn.textContent = '×';
+    closeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      truncatePanesAfter(index - 1);
+    });
+    paneEl.appendChild(closeBtn);
   }
 
-  let result;
-  try {
-    result = objectDetector.detectForVideo(videoEl, timestampMs);
-  } catch (err) {
-    // The detector may be in an inconsistent state (e.g. the stream was
-    // swapped mid-loop), so surface the failure instead of rescheduling
-    // into a loop that would keep throwing.
-    showFallback("Something went wrong during detection. Reload the page to try again.");
-    return;
+  paneEl.addEventListener('click', (e) => handlePaneClick(pane, e));
+  paneEl.addEventListener('wheel', (e) => handlePaneWheel(pane, e), { passive: false });
+
+  const resizeObserver = new ResizeObserver(() => resizePaneCanvas(pane));
+  resizeObserver.observe(paneEl);
+  pane.resizeObserver = resizeObserver;
+
+  panesContainer.appendChild(paneEl);
+  panes.push(pane);
+  resizePaneCanvas(pane);
+  updatePaneLabel(pane);
+
+  // Keep the newest pane in view as the filmstrip grows wider than the screen.
+  paneEl.scrollIntoView({ behavior: 'smooth', inline: 'end', block: 'nearest' });
+
+  return pane;
+}
+
+function truncatePanesAfter(index) {
+  while (panes.length - 1 > index) {
+    const pane = panes.pop();
+    pane.resizeObserver.disconnect();
+    pane.el.remove();
+  }
+}
+
+function resizePaneCanvas(pane) {
+  // Match the canvas's backing-store resolution to the display's actual
+  // pixel density. Without this a canvas is always drawn at 1 device pixel
+  // per CSS pixel, which looks soft/blurry on any Retina-class screen next
+  // to a directly-rendered <video>.
+  const dpr = window.devicePixelRatio || 1;
+  pane.canvas.width = Math.max(1, Math.round(pane.el.clientWidth * dpr));
+  pane.canvas.height = Math.max(1, Math.round(pane.el.clientHeight * dpr));
+}
+
+function updatePaneLabel(pane) {
+  pane.label.textContent = pane.index === 0 ? 'LIVE' : `×${pane.zoom.toFixed(1)}`;
+}
+
+function localPointFromEvent(pane, e) {
+  const rect = pane.el.getBoundingClientRect();
+  let lx = clamp((e.clientX - rect.left) / rect.width, 0, 1);
+  let ly = clamp((e.clientY - rect.top) / rect.height, 0, 1);
+
+  // The feed is mirrored for the selfie-facing camera, so translate the
+  // pointer back into the source video's un-mirrored coordinate space.
+  if (stageEl.classList.contains('perceiving-mirrored')) {
+    lx = 1 - lx;
   }
 
-  drawDetections(result.detections);
-  scheduleCaptionUpdate(result.detections);
-  requestAnimationFrame(detectFrame);
+  return { lx, ly };
 }
 
-/* Short L-shaped marks at each corner, matching the site's .corner-bracket
-   accent, instead of a generic full bounding rectangle. */
-function drawCornerBrackets(x, y, width, height) {
-  const arm = Math.max(8, Math.min(22, width / 4, height / 4));
+/* The actual crop read from the video for a pane: zoom sets the base size,
+   then it's trimmed to the pane's own aspect ratio (object-fit: cover
+   behavior) so panes narrower or wider than the camera's aspect ratio crop
+   instead of stretching the image to fit. Shared by rendering and by the
+   click/wheel math so a click always lands on the pixel actually drawn
+   there. Returns null until the video has real dimensions. */
+function getPaneCropRect(pane) {
+  const vw = videoEl.videoWidth;
+  const vh = videoEl.videoHeight;
+  if (!vw || !vh) return null;
 
-  ctx.beginPath();
-  // top-left
-  ctx.moveTo(x, y + arm);
-  ctx.lineTo(x, y);
-  ctx.lineTo(x + arm, y);
-  // top-right
-  ctx.moveTo(x + width - arm, y);
-  ctx.lineTo(x + width, y);
-  ctx.lineTo(x + width, y + arm);
-  // bottom-right
-  ctx.moveTo(x + width, y + height - arm);
-  ctx.lineTo(x + width, y + height);
-  ctx.lineTo(x + width - arm, y + height);
-  // bottom-left
-  ctx.moveTo(x + arm, y + height);
-  ctx.lineTo(x, y + height);
-  ctx.lineTo(x, y + height - arm);
-  ctx.stroke();
-}
+  let srcW = vw / pane.zoom;
+  let srcH = vh / pane.zoom;
 
-function drawDetections(detections) {
-  ctx.clearRect(0, 0, canvasEl.width, canvasEl.height);
-  ctx.lineWidth = 3;
-  ctx.lineCap = 'butt';
-  ctx.font = '16px Georgia, serif';
+  const paneAspect = pane.canvas.width && pane.canvas.height
+    ? pane.canvas.width / pane.canvas.height
+    : vw / vh;
+  const cropAspect = srcW / srcH;
 
-  // The video is mirrored in CSS for the selfie-facing camera, but the canvas
-  // deliberately is not - mirroring the canvas would mirror the label text
-  // too. Flip the box coordinates here instead so the brackets still land on
-  // the right part of the mirrored image while the text stays readable.
-  const mirrored = stageEl.classList.contains('perceiving-mirrored');
-
-  detections.forEach((detection) => {
-    const box = detection.boundingBox;
-    const category = detection.categories[0];
-    const label = `${category.categoryName} ${Math.round(category.score * 100)}%`;
-    const x = mirrored ? canvasEl.width - box.originX - box.width : box.originX;
-    const y = box.originY;
-
-    ctx.strokeStyle = '#8b7355';
-    drawCornerBrackets(x, y, box.width, box.height);
-
-    const textWidth = ctx.measureText(label).width;
-    ctx.fillStyle = '#8b7355';
-    ctx.fillRect(x, y - 22, textWidth + 10, 22);
-    ctx.fillStyle = '#ede8e1';
-    ctx.fillText(label, x + 5, y - 6);
-  });
-}
-
-// Throttle, not a trailing debounce: detectFrame calls this on every animation
-// frame, so a trailing debounce would reset its own timer ~60x/second and the
-// caption would never update at all during continuous detection.
-function scheduleCaptionUpdate(detections) {
-  latestDetections = detections;
-  if (captionThrottleTimer) return;
-  captionThrottleTimer = setTimeout(() => {
-    captionThrottleTimer = null;
-    captionEl.textContent = buildCaptionText(latestDetections);
-  }, 700);
-}
-
-function buildCaptionText(detections) {
-  if (detections.length === 0) {
-    return "Looking for something to see...";
+  if (paneAspect > cropAspect) {
+    srcH = srcW / paneAspect;
+  } else {
+    srcW = srcH * paneAspect;
   }
 
-  const counts = new Map();
-  detections.forEach((detection) => {
-    const name = detection.categories[0].categoryName;
-    counts.set(name, (counts.get(name) || 0) + 1);
-  });
+  const sx = clamp(pane.center.x * vw - srcW / 2, 0, vw - srcW);
+  const sy = clamp(pane.center.y * vh - srcH / 2, 0, vh - srcH);
 
-  const parts = Array.from(counts.entries()).map(([name, count]) => formatCount(name, count));
-
-  if (parts.length === 1) {
-    return `I see ${parts[0]}.`;
-  }
-
-  if (parts.length === 2) {
-    return `I see ${parts[0]} and ${parts[1]}.`;
-  }
-
-  const last = parts.pop();
-  return `I see ${parts.join(', ')}, and ${last}.`;
+  return { sx, sy, srcW, srcH, vw, vh };
 }
 
-function formatCount(name, count) {
-  if (count === 1) {
-    return /^[aeiou]/i.test(name) ? `an ${name}` : `a ${name}`;
-  }
-  return `${count} ${pluralize(name)}`;
+function paneLocalToVideoNormalized(pane, lx, ly) {
+  const rect = getPaneCropRect(pane);
+  if (!rect) return { x: pane.center.x, y: pane.center.y };
+  return {
+    x: (rect.sx + lx * rect.srcW) / rect.vw,
+    y: (rect.sy + ly * rect.srcH) / rect.vh
+  };
 }
 
-function pluralize(name) {
-  if (name === 'person') return 'people';
-  if (name.endsWith('s')) return name;
-  return `${name}s`;
+function handlePaneClick(pane, e) {
+  const { lx, ly } = localPointFromEvent(pane, e);
+  const point = paneLocalToVideoNormalized(pane, lx, ly);
+
+  // Clicking any pane continues the chain from there, dropping whatever
+  // deeper panes existed after it.
+  truncatePanesAfter(pane.index);
+  const nextZoom = clamp(pane.zoom * ZOOM_STEP, MIN_ZOOM, MAX_ZOOM);
+  createPane(nextZoom, point);
+}
+
+function handlePaneWheel(pane, e) {
+  e.preventDefault();
+  const { lx, ly } = localPointFromEvent(pane, e);
+  const anchor = paneLocalToVideoNormalized(pane, lx, ly);
+
+  const factor = Math.exp(-e.deltaY * 0.0015);
+  pane.zoom = clamp(pane.zoom * factor, MIN_ZOOM, MAX_ZOOM);
+
+  // Re-anchor so the point under the cursor stays put as the zoom changes.
+  const rect = getPaneCropRect(pane);
+  if (rect) {
+    const spanX = rect.srcW / rect.vw;
+    const spanY = rect.srcH / rect.vh;
+    pane.center = {
+      x: clamp(anchor.x - (lx - 0.5) * spanX, spanX / 2, 1 - spanX / 2),
+      y: clamp(anchor.y - (ly - 0.5) * spanY, spanY / 2, 1 - spanY / 2)
+    };
+  }
+
+  updatePaneLabel(pane);
+}
+
+function drawPaneFrame(pane) {
+  const cw = pane.canvas.width;
+  const ch = pane.canvas.height;
+  if (!cw || !ch) return;
+
+  const rect = getPaneCropRect(pane);
+  if (!rect) return;
+
+  const ctx = pane.ctx;
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.save();
+  if (stageEl.classList.contains('perceiving-mirrored')) {
+    ctx.translate(cw, 0);
+    ctx.scale(-1, 1);
+  }
+  ctx.drawImage(videoEl, rect.sx, rect.sy, rect.srcW, rect.srcH, 0, 0, cw, ch);
+  ctx.restore();
+}
+
+function renderPanes() {
+  if (videoEl.readyState >= 2 && videoEl.videoWidth) {
+    panes.forEach(drawPaneFrame);
+  }
+  requestAnimationFrame(renderPanes);
 }
 
 function initPerceivingPage() {
   startBtn.addEventListener('click', startPerceiving);
   flipBtn.addEventListener('click', flipCamera);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && panes.length > 1) {
+      truncatePanesAfter(panes.length - 2);
+    }
+  });
 }
 
 document.addEventListener('DOMContentLoaded', initPerceivingPage);
