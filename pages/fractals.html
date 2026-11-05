@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Fractals - Joseph Ayele</title>
+    <link rel="shortcut icon" href="../img/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="../img/favicon.ico" type="image/x-icon">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="A live fractal generator: pick a shape, set how deep it repeats, and shape the color and texture with sliders, right in your browser">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/fractals.css">
+</head>
+<body class="fractals-body">
+    <a href="../index.html" class="fractals-home-link"><strong>Joseph Ayele</strong></a>
+
+    <header class="fractals-header">
+        <h1>Fractals</h1>
+        <p>Pick a shape, set how deep it repeats, then shape the color and texture with the sliders. Everything renders live, right here in your browser.</p>
+    </header>
+
+    <main class="fractals-main">
+        <div class="fractals-canvas-wrap">
+            <canvas id="fractal-canvas"></canvas>
+            <p class="fractals-draw-hint hide" id="draw-hint">Draw a shape on the canvas, then release</p>
+        </div>
+
+        <aside class="fractals-controls">
+            <div class="control-group">
+                <h2>Shape</h2>
+                <div class="shape-buttons" id="shape-buttons">
+                    <button type="button" class="shape-btn is-active" data-shape="square">Square</button>
+                    <button type="button" class="shape-btn" data-shape="triangle">Triangle</button>
+                    <button type="button" class="shape-btn" data-shape="rectangle">Rectangle</button>
+                    <button type="button" class="shape-btn" data-shape="custom">Draw your own</button>
+                </div>
+                <button type="button" class="text-btn hide" id="clear-draw-btn">Clear drawing</button>
+            </div>
+
+            <div class="control-group">
+                <div class="control-label-row">
+                    <label for="levels-slider">Levels</label>
+                    <span class="control-value" id="levels-value">4</span>
+                </div>
+                <input type="range" id="levels-slider" min="1" max="5" step="1" value="4">
+            </div>
+
+            <div class="control-group">
+                <div class="control-label-row">
+                    <label for="fuzz-slider">Fuzz</label>
+                    <span class="control-value" id="fuzz-value">0</span>
+                </div>
+                <input type="range" id="fuzz-slider" min="0" max="100" step="1" value="0">
+            </div>
+
+            <div class="control-group">
+                <div class="control-label-row">
+                    <label for="blend-slider">Blend</label>
+                    <span class="control-value" id="blend-value">20</span>
+                </div>
+                <input type="range" id="blend-slider" min="0" max="100" step="1" value="20">
+            </div>
+
+            <div class="control-group">
+                <h2>Palette presets</h2>
+                <div class="palette-buttons" id="palette-buttons"></div>
+            </div>
+
+            <div class="control-group">
+                <h2>Colors</h2>
+                <div class="color-swatches" id="color-swatches"></div>
+                <button type="button" class="text-btn" id="add-color-btn">+ Add color</button>
+            </div>
+
+            <div class="control-group control-actions">
+                <button type="button" class="action-btn" id="randomize-btn">Randomize</button>
+                <button type="button" class="action-btn action-btn--primary" id="export-btn">Save image</button>
+            </div>
+        </aside>
+    </main>
+
+    <script src="../js/fractals.js"></script>
+</body>
+</html>

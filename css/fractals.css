@@ -1,0 +1,319 @@
+.fractals-body {
+  background: var(--primary-bg);
+  min-height: 100vh;
+}
+
+.fractals-home-link {
+  position: absolute;
+  top: 1.5rem;
+  left: 1.5rem;
+  color: var(--primary-text);
+  text-decoration: none;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.125rem;
+  z-index: 10;
+}
+
+.fractals-home-link:hover {
+  color: var(--accent-color);
+  text-decoration: none;
+}
+
+.fractals-header {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 5rem 1.75rem 1.5rem;
+  text-align: left;
+}
+
+.fractals-header h1 {
+  font-family: 'Space Grotesk', 'Inter', sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--primary-text);
+  margin-bottom: 0.75rem;
+}
+
+.fractals-header p {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--secondary-text);
+  max-width: 560px;
+  line-height: 1.55;
+  margin-bottom: 0;
+}
+
+.fractals-main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.5rem 1.75rem 5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  align-items: center;
+}
+
+.fractals-canvas-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  aspect-ratio: 1 / 1;
+  background: var(--secondary-bg);
+  border: 8px solid var(--primary-text);
+  box-shadow:
+    0 0 0 2px var(--secondary-bg),
+    0 6px 28px rgba(0, 0, 0, 0.25),
+    inset 0 0 0 3px var(--soft-cream);
+}
+
+#fractal-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: default;
+}
+
+#fractal-canvas.is-drawable {
+  cursor: crosshair;
+}
+
+.fractals-draw-hint {
+  position: absolute;
+  bottom: 0.9rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(45, 40, 34, 0.85);
+  color: var(--soft-cream);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8125rem;
+  padding: 0.5rem 0.9rem;
+  border-radius: var(--border-radius);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.fractals-controls {
+  width: 100%;
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  background: var(--secondary-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 1.5rem;
+  box-shadow: 0 4px 18px var(--shadow-light);
+}
+
+.control-group h2 {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--secondary-text);
+  margin-bottom: 0.75rem;
+}
+
+.control-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.4rem;
+}
+
+.control-label-row label {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--primary-text);
+}
+
+.control-value {
+  font-family: 'Share Tech Mono', 'Courier New', monospace;
+  font-size: 0.8125rem;
+  color: var(--accent-color);
+}
+
+.control-group input[type="range"] {
+  width: 100%;
+  accent-color: var(--warm-brown);
+}
+
+.shape-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.shape-btn {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 0.6rem 0.5rem;
+  background: var(--soft-cream);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  color: var(--primary-text);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.shape-btn:hover {
+  border-color: var(--accent-color);
+}
+
+.shape-btn.is-active {
+  background: var(--warm-brown);
+  border-color: var(--warm-brown);
+  color: white;
+}
+
+.text-btn {
+  margin-top: 0.6rem;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.8125rem;
+  color: var(--accent-color);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.text-btn:hover {
+  color: var(--accent-dark);
+}
+
+.palette-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.palette-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+  display: block;
+  overflow: hidden;
+  transition: var(--transition);
+}
+
+.palette-btn span {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.palette-btn.is-active {
+  border-color: var(--primary-text);
+  transform: translateY(-2px);
+}
+
+.color-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 0.6rem;
+}
+
+.color-swatch {
+  position: relative;
+  width: 42px;
+  height: 42px;
+}
+
+.color-swatch input[type="color"] {
+  width: 100%;
+  height: 100%;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  padding: 0;
+  cursor: pointer;
+  background: none;
+}
+
+.color-swatch input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 2px;
+}
+
+.color-swatch input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: 5px;
+}
+
+.color-swatch-remove {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: none;
+  background: var(--primary-text);
+  color: white;
+  font-size: 0.6875rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.color-swatch-remove:hover {
+  background: var(--accent-dark);
+}
+
+.control-actions {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  flex: 1 1 auto;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  padding: 0.75rem 1rem;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  background: var(--soft-cream);
+  color: var(--primary-text);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.action-btn:hover {
+  border-color: var(--accent-color);
+  transform: translateY(-2px);
+}
+
+.action-btn--primary {
+  background: var(--warm-brown);
+  border-color: var(--warm-brown);
+  color: white;
+}
+
+.action-btn--primary:hover {
+  background: var(--accent-dark);
+  box-shadow: 0 6px 20px var(--shadow-warm);
+}
+
+@media (min-width: 900px) {
+  .fractals-main {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
+  }
+
+  .fractals-canvas-wrap {
+    max-width: 560px;
+  }
+
+  .fractals-controls {
+    max-width: 320px;
+  }
+}
