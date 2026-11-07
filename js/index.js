@@ -19,6 +19,7 @@ function initScrollAnimations() {
             if (entry.isIntersecting) {
                 entry.target.style.opacity = '1';
                 entry.target.style.transform = 'translateY(0)';
+                entry.target.classList.add('is-visible');
             }
         });
     }, observerOptions);
@@ -34,21 +35,10 @@ function initScrollAnimations() {
 
 function initProjectCards() {
     const cards = document.querySelectorAll('.project-card');
-    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
     cards.forEach(card => {
-        // Only add hover effects on non-touch devices
-        if (!isTouchDevice) {
-            card.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-8px) scale(1.02)';
-            });
-
-            card.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0) scale(1)';
-            });
-        }
-
-        // Ripple effect works on all devices
+        // Hover motion is handled by effects.js (frame-dodge) on devices that
+        // support it; this is just the ripple, which works everywhere.
         card.addEventListener('click', function(e) {
             const ripple = document.createElement('div');
             ripple.style.cssText = `

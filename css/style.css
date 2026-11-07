@@ -1,20 +1,24 @@
 :root {
-  /* Warm, Natural Color Palette */
-  --primary-bg: #f5f3f0;
-  --secondary-bg: #ffffff;
-  --primary-text: #2d2822;
-  --secondary-text: #5a5247;
-  --accent-color: #9b8b7e;
-  --accent-dark: #7a6c5f;
-  --warm-brown: #8b7355;
-  --soft-cream: #ede8e1;
-  --earth-tone: #a88f7a;
-  --border-color: #d4cdc3;
-  --shadow-light: rgba(155, 139, 126, 0.15);
-  --shadow-medium: rgba(155, 139, 126, 0.25);
-  --shadow-warm: rgba(138, 115, 93, 0.3);
+  /* Cream + ink + a pop of blue, in the spirit of ariciano.earth */
+  --primary-bg: #f2efe7;
+  --secondary-bg: #fffdf8;
+  --primary-text: #1a1a1a;
+  --secondary-text: rgba(26, 26, 26, 0.62);
+  --accent-color: #0032f9;
+  --accent-dark: #0024ba;
+  --warm-brown: #0032f9;
+  --soft-cream: #eae5d9;
+  --earth-tone: #0032f9;
+  --border-color: #d9d2c2;
+  --shadow-light: rgba(26, 26, 26, 0.08);
+  --shadow-medium: rgba(26, 26, 26, 0.16);
+  --shadow-warm: rgba(0, 50, 249, 0.25);
   --border-radius: 10px;
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Typography */
+  --font-display: 'Sorts Mill Goudy', 'Georgia', serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
   /* Responsive spacing system */
   --spacing-xs: 0.25rem;
@@ -46,7 +50,7 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-body);
   font-weight: 400;
   font-size: 16px;
   line-height: 1.6;
@@ -76,7 +80,7 @@ body {
 }
 
 .header-container:hover {
-  transform: translateY(-2px);
+  transform: translateY(-2px) rotate(-0.35deg);
   box-shadow:
     0 0 0 2px var(--secondary-bg),
     0 10px 38px rgba(0, 0, 0, 0.3),
@@ -84,12 +88,12 @@ body {
 }
 
 .simple-header .name {
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(1.75rem, 3.5vw, 2.25rem);
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 7vw, 4.5rem);
   font-weight: 400;
-  margin-bottom: 0.375rem;
+  margin-bottom: 0.5rem;
   letter-spacing: -0.01em;
-  line-height: 1.2;
+  line-height: 1.02;
 }
 
 .simple-header .name a {
@@ -104,18 +108,20 @@ body {
 }
 
 .simple-header .title {
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: var(--font-body);
   font-size: clamp(0.9375rem, 2vw, 1.0625rem);
   color: var(--secondary-text);
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.5rem;
   font-weight: 400;
-  font-style: italic;
+  letter-spacing: 0.01em;
 }
 
 .simple-header .location {
-  font-size: clamp(0.875rem, 1.75vw, 0.9375rem);
-  color: var(--accent-color);
+  font-family: var(--font-display);
+  font-size: clamp(0.9375rem, 2vw, 1.0625rem);
+  color: var(--primary-text);
   font-weight: 400;
+  font-style: italic;
 }
 
 .portfolio-grid {
@@ -257,16 +263,18 @@ body {
 }
 
 .project-title {
-  font-size: 1.25rem;
-  font-weight: 600;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 400;
   color: var(--primary-text);
   margin-bottom: 6px;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  text-transform: none;
   line-height: 1.2;
 }
 
 .project-description {
+  font-family: var(--font-body);
   color: var(--secondary-text);
   font-size: 0.875rem;
   line-height: 1.4;
@@ -328,8 +336,9 @@ body {
 }
 
 #description-row h1 {
-  font-size: clamp(2rem, 5vw, 2.75rem);
-  font-weight: 600;
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 6vw, 3.5rem);
+  font-weight: 400;
   margin-bottom: 2rem;
   color: var(--primary-text);
   letter-spacing: -0.01em;
@@ -347,13 +356,17 @@ body {
 }
 
 #description-row h3 {
-  font-size: 1.5rem;
-  font-weight: 600;
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
   margin-bottom: 1.5rem;
   color: var(--accent-color);
 }
 
 #description-row h4 {
+  font-family: var(--font-body);
   font-size: 1.0625rem;
   font-weight: 400;
   line-height: 1.7;
@@ -410,6 +423,7 @@ body {
 }
 
 .testContent h4 {
+  font-family: var(--font-body);
   font-size: 1.0625rem;
   color: var(--secondary-text);
   margin-bottom: 1rem;
@@ -497,7 +511,8 @@ img, video, iframe {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-weight: 600;
+  font-family: var(--font-display);
+  font-weight: 400;
   line-height: 1.3;
   margin-bottom: 1rem;
 }

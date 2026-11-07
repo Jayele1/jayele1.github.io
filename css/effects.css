@@ -1,0 +1,88 @@
+/* Playful mouse interactions: cursor trail, circled hover-words, dodging frames.
+   All of this is opt-in via JS (effects.js) and only runs for pointer:fine
+   hover-capable devices that haven't asked for reduced motion. */
+
+#js-cursor-trail {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Hoverable word: wraps a single word from flowing text. On hover it steps
+   away from its neighbors and a hand-drawn circle grows around it. */
+.cw {
+  position: relative;
+  display: inline-block;
+  transition: margin 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+              color 0.25s ease;
+}
+
+.cw:hover {
+  margin: 0 0.45em;
+  color: var(--accent-color);
+}
+
+.cw::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 170%;
+  height: 230%;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0.55) rotate(-6deg);
+  transition: opacity 0.3s ease, transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.cw:hover::after {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1) rotate(var(--cw-rot, -2deg));
+}
+
+/* Permanently circled words: the circle is always on, no hover needed. */
+.cw-always {
+  margin: 0 0.45em;
+}
+
+.cw-always::after {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1) rotate(var(--cw-rot, -2deg));
+}
+
+/* Wider, flatter loop for a multi-word phrase circled as one unit. */
+.cw-phrase::after {
+  width: 142%;
+  height: 260%;
+}
+
+/* Hand-drawn circles: a wobbly ellipse built from SVG turbulence/displacement
+   (feTurbulence + feDisplacementMap), so each loop has an uneven, sketched
+   line rather than a clean geometric oval. Three variants, cycled by
+   position, for a bit of natural variety. */
+.cw:nth-of-type(3n)::after {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 80'%3E%3Cfilter id='h1' x='-30%25' y='-30%25' width='160%25' height='160%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.045' numOctaves='2' seed='4' result='n'/%3E%3CfeDisplacementMap in='SourceGraphic' in2='n' scale='7'/%3E%3C/filter%3E%3Cellipse cx='80' cy='40' rx='72' ry='32' fill='none' stroke='%230032f9' stroke-width='3' stroke-linecap='round' filter='url(%23h1)'/%3E%3C/svg%3E");
+  --cw-rot: -3deg;
+}
+
+.cw:nth-of-type(3n+1)::after {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 80'%3E%3Cfilter id='h2' x='-30%25' y='-30%25' width='160%25' height='160%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.055' numOctaves='2' seed='9' result='n'/%3E%3CfeDisplacementMap in='SourceGraphic' in2='n' scale='8'/%3E%3C/filter%3E%3Cellipse cx='80' cy='40' rx='70' ry='30' fill='none' stroke='%230032f9' stroke-width='3' stroke-linecap='round' filter='url(%23h2)'/%3E%3C/svg%3E");
+  --cw-rot: 2deg;
+}
+
+.cw:nth-of-type(3n+2)::after {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 160 80'%3E%3Cfilter id='h3' x='-30%25' y='-30%25' width='160%25' height='160%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.035' numOctaves='3' seed='13' result='n'/%3E%3CfeDisplacementMap in='SourceGraphic' in2='n' scale='6'/%3E%3C/filter%3E%3Cellipse cx='80' cy='40' rx='75' ry='34' fill='none' stroke='%230032f9' stroke-width='3' stroke-linecap='round' filter='url(%23h3)'/%3E%3C/svg%3E");
+  --cw-rot: -1deg;
+}
+
+/* Project frames: given a will-change hint so the dodge animation (driven
+   from JS) stays smooth; actual motion lives in effects.js. */
+.project-card.dodge-active {
+  will-change: transform;
+}
