@@ -25,13 +25,13 @@
   font-family: 'Space Grotesk', 'Inter', sans-serif;
   font-weight: 700;
   letter-spacing: -0.02em;
-  color: var(--primary-text);
+  color: var(--text-on-dark);
 }
 
 .perceiving-intro p,
 .perceiving-fallback p {
   max-width: 480px;
-  color: var(--secondary-text);
+  color: var(--text-on-dark-muted);
   font-weight: 400;
   line-height: 1.55;
 }
@@ -70,7 +70,7 @@
   position: absolute;
   top: 1.5rem;
   left: 1.5rem;
-  color: var(--primary-text);
+  color: var(--text-on-dark);
   text-decoration: none;
   font-family: Georgia, 'Times New Roman', serif;
   font-size: 1.125rem;

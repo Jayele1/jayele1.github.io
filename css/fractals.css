@@ -7,7 +7,7 @@
   position: absolute;
   top: 1.5rem;
   left: 1.5rem;
-  color: var(--primary-text);
+  color: var(--text-on-dark);
   text-decoration: none;
   font-family: Georgia, 'Times New Roman', serif;
   font-size: 1.125rem;
@@ -30,13 +30,13 @@
   font-family: 'Space Grotesk', 'Inter', sans-serif;
   font-weight: 700;
   letter-spacing: -0.02em;
-  color: var(--primary-text);
+  color: var(--text-on-dark);
   margin-bottom: 0.75rem;
 }
 
 .fractals-header p {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  color: var(--secondary-text);
+  color: var(--text-on-dark-muted);
   max-width: 560px;
   line-height: 1.55;
   margin-bottom: 0;
