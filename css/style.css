@@ -806,6 +806,16 @@ footer p {
     z-index: 5;
   }
 
+  /* These captions sit below the frame, directly on the dark page
+     background rather than the cream card mat, so they need light text. */
+  .project-title {
+    color: var(--soft-cream);
+  }
+
+  .project-description {
+    color: var(--text-on-dark-muted);
+  }
+
   .social-link {
     margin: 0 1rem;
   }
