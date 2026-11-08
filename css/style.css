@@ -210,7 +210,7 @@ body {
 .corner-bracket--br { bottom: 10px; right: 10px; border-left: none; border-top: none; }
 
 .project-image--fractals {
-  background: linear-gradient(135deg, #3b1f66, #a12db0, #e0479b, #f2a65a, #f7e04b);
+  background: url('../img/fractal-thumb.png') center / cover no-repeat;
 }
 
 .project-image--perceiving {
