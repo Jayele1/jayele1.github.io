@@ -552,6 +552,88 @@ body {
   box-shadow: 0 16px 40px var(--shadow-medium);
 }
 
+.book-shelf {
+  margin-top: 2rem;
+}
+
+.book-shelf h3 {
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 1.25rem;
+  color: var(--accent-color);
+}
+
+.book-section-label {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.0625rem;
+  font-weight: 400;
+  color: var(--primary-text);
+  margin: 1.75rem 0 0.75rem;
+}
+
+.book-section-label:first-of-type {
+  margin-top: 0;
+}
+
+.book-list {
+  list-style: none;
+  margin: 0 0 0.25rem;
+  padding: 0;
+}
+
+.book-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 0.5em;
+  padding: 0.55rem 0;
+}
+
+.book-title {
+  --tilt: -0.5deg;
+  display: inline-block;
+  font-family: 'Gochi Hand', var(--font-display);
+  font-weight: 400;
+  font-size: 1.3125rem;
+  letter-spacing: 0.01em;
+  color: var(--primary-text);
+  line-height: 1.3;
+  text-decoration: none;
+  transform: rotate(var(--tilt));
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.book-item:nth-child(even) .book-title {
+  --tilt: 0.8deg;
+}
+
+.book-item:nth-child(3n) .book-title {
+  --tilt: -0.4deg;
+}
+
+.book-title:hover {
+  color: var(--accent-color);
+  text-decoration: underline;
+  text-decoration-style: wavy;
+  transform: rotate(var(--tilt)) scale(1.02);
+}
+
+.book-author {
+  font-family: 'Gochi Hand', var(--font-body);
+  font-weight: 400;
+  font-size: 1rem;
+  color: var(--secondary-text);
+}
+
+.book-author::before {
+  content: '\2014';
+  margin-right: 0.35em;
+}
+
 #output {
   margin-top: 1.5rem;
   padding: 1.25rem;
