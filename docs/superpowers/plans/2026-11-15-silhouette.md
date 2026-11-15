@@ -199,7 +199,7 @@ git commit -m "Add Silhouette freehand draw capture and profile derivation"
 - Create: `js/silhouette-scene.js`
 
 **Interfaces:**
-- Produces: `SilhouetteScene.init(containerEl, drawCanvas)` and an internal `buildMesh(profile)` used by `showProfile` (Task 4). For this task, wire a temporary call so it's independently checkable: at the bottom of the file, behind a `?debug=1` query-string check, call `init` then `buildMesh` with a hardcoded sample profile (reuse the "vase" array from Task 2's Node check, run through the same math) and show the container — remove this debug block in Task 4 once `showProfile` exists to replace it.
+- Produces: `SilhouetteScene.init(containerEl, drawCanvas)` and an internal `buildMesh(profile)` used by `showProfile` (Task 4). For this task, wire a temporary debug harness so it's independently checkable without depending on `js/silhouette.js` at all (that file isn't loaded until after `silhouette-scene.js` per Task 1's script order, and won't have real drawing wired to it until Task 6): at the bottom of the file, behind a `?debug=1` query-string check, call `init` then `buildMesh` with a hardcoded literal sample profile — e.g. `[{radius:0.15,height:0},{radius:0.45,height:0.5},{radius:0.3,height:1.1},{radius:0.55,height:2}]` (an open-rim shape: the last point has a non-trivial radius, not ~0) — and show the container. **This debug harness stays in place through Tasks 3-5** (Task 4 extends it to call `showProfile` instead of `buildMesh` directly; Task 5 reuses it unchanged) and is only removed in Task 6, once real drawing is wired to the same call.
 
 - [ ] **Step 1: Implement `init(containerEl, drawCanvas)`**
 
@@ -211,7 +211,7 @@ Convert `profile` (`Array<{radius, height}>`) to `Array<THREE.Vector2>` (`new TH
 
 - [ ] **Step 3: Verify the hollow-rim lighting specifically**
 
-Open `pages/silhouette.html?debug=1` in the browser. Use a hardcoded test profile that leaves the rim open at the top (radius not tapering to ~0 at the last point — e.g. the "vase" sample from Task 2, which ends at `height≈0` with a non-trivial radius). Screenshot the result. Confirm: the object reads as a solid, lit, roughly vase-shaped object, and looking at the open top rim shows a visibly lit interior wall (not a flat black disc, not a see-through gap to the background) — if the interior is dark, add/raise the fill light's intensity until it reads correctly, since this is exactly the anti-goal the spec calls out.
+Open `pages/silhouette.html?debug=1` in the browser — the sample profile from this task's Interfaces section already leaves the rim open at the top (its last point, at `height=2`, has `radius=0.55`, not tapering to ~0). Screenshot the result. Confirm: the object reads as a solid, lit, roughly vase-shaped object, and looking at the open top rim shows a visibly lit interior wall (not a flat black disc, not a see-through gap to the background) — if the interior is dark, add/raise the fill light's intensity until it reads correctly, since this is exactly the anti-goal the spec calls out.
 
 - [ ] **Step 4: Commit**
 
@@ -229,7 +229,7 @@ git commit -m "Add Three.js scene bootstrap with hollow lathe rendering"
 
 **Interfaces:**
 - Consumes: `buildMesh(profile)`, lights/renderer/scene from Task 3.
-- Produces: `showProfile(profile)` (replaces the `?debug=1` block from Task 3), and an internal `currentPhiLength` animation driver that Task 5 extends into the idle spin.
+- Produces: `showProfile(profile, axisX, canvasLogicalSize)`, and an internal `currentPhiLength` animation driver that Task 5 extends into the idle spin. Update Task 3's `?debug=1` block to call `showProfile(sampleProfile, sampleAxisX, DRAW_LOGICAL_SIZE)` instead of calling `buildMesh` directly — pick a `sampleAxisX` (e.g. `100`) that's simply internally consistent for the debug check, not derived from a real stroke. Keep the debug block in place; don't remove it yet — Task 5 still needs it.
 
 - [ ] **Step 1: Implement the orthographic reveal camera, pixel-matched to the draw canvas**
 
@@ -241,7 +241,7 @@ Build the mesh once via `buildMesh(profile)`, but render it with the geometry's 
 
 - [ ] **Step 3: Verify the handoff looks continuous, and the near-axis edge case doesn't break the camera**
 
-In the browser, draw a real stroke (not the debug profile) and release. Confirm: the line doesn't visibly jump or flash when the 3D view appears — it should look like the drawn line itself starts spinning. Then draw a second stroke that stays within a few pixels of its own leftmost point the whole way (a near-vertical, barely-wide squiggle) and confirm it still reveals and the final orbit-ready camera isn't zoomed to nothing or NaN-positioned (check the console for no errors).
+Real pointer-drawn strokes aren't wired to this yet (that's Task 6) — verify through the `?debug=1` harness instead. Open `pages/silhouette.html?debug=1` and confirm the flat profile appears first, then visibly sweeps into the solid over ~1.2s without a jump/flash at the start (it should look like the flat ribbon itself starts spinning, not a cut to an unrelated view), then the camera settles into a perspective view framing the object with margin. Then temporarily edit the debug sample profile to one with very small radius throughout (e.g. every `radius` near `MIN_RADIUS_PX * WORLD_SCALE`) to simulate the near-axis edge case, reload with `?debug=1`, and confirm it still reveals with no console errors and the final camera isn't zoomed to nothing (distance clamp from Step 2 kicks in). Revert the sample profile back afterward.
 
 - [ ] **Step 4: Commit**
 
@@ -271,7 +271,7 @@ Track the timestamp of the last drag input. In the render loop, once `Date.now()
 
 - [ ] **Step 3: Verify in browser**
 
-Draw a line, let it reveal. After it settles, click-drag on the object and confirm it rotates smoothly following the drag and doesn't flip or jump at the poles. Release and wait ~2 seconds; confirm it resumes a slow spin on its own. Drag again; confirm the auto-spin stops immediately and hands control back.
+Real pointer-drawn strokes still aren't wired up yet (Task 6) — use `pages/silhouette.html?debug=1` again to get an object revealed and settled into orbit mode. Click-drag on the object and confirm it rotates smoothly following the drag and doesn't flip or jump at the poles. Release and wait ~2 seconds; confirm it resumes a slow spin on its own. Drag again; confirm the auto-spin stops immediately and hands control back.
 
 - [ ] **Step 4: Commit**
 
@@ -294,7 +294,7 @@ git commit -m "Add drag-to-orbit and idle auto-spin to Silhouette scene"
 
 - [ ] **Step 1: Replace Task 2's `// TODO: Task 6` with the real call**
 
-In `finishDrawing()`, once `deriveProfileFromPoints` returns a non-null result, destructure `{ points, axisX }` from it, call `SilhouetteScene.init(container, drawCanvas)` on first use only, then `SilhouetteScene.showProfile(points, axisX, DRAW_LOGICAL_SIZE)`. Toggle the `.hide` class so the draw canvas hides and the scene container shows the moment the sweep begins (Task 4's Step 2 already expects this toggle to happen here, not inside the scene code).
+In `finishDrawing()`, once `deriveProfileFromPoints` returns a non-null result, destructure `{ points, axisX }` from it, call `SilhouetteScene.init(container, drawCanvas)` on first use only, then `SilhouetteScene.showProfile(points, axisX, DRAW_LOGICAL_SIZE)`. Toggle the `.hide` class so the draw canvas hides and the scene container shows the moment the sweep begins (Task 4's Step 2 already expects this toggle to happen here, not inside the scene code). Remove the `?debug=1` block from `js/silhouette-scene.js` now — real drawing exercises the same `showProfile` call it was standing in for.
 
 - [ ] **Step 2: Implement `SilhouetteScene.reset()` in `js/silhouette-scene.js`**
 
@@ -325,7 +325,7 @@ git commit -m "Wire Silhouette drawing to the 3D reveal with Clear/teardown"
 
 **Files:**
 - Modify: `js/silhouette.js`
-- Modify: `js/silhouette-scene.js` (if `setColor` needs anything beyond a direct material-color set)
+- Modify: `js/silhouette-scene.js`
 
 **Interfaces:**
 - Consumes: `#silhouette-color-swatches` (Task 1), `SilhouetteScene.setColor(hex)`.
@@ -428,6 +428,7 @@ git commit -m "Add Silhouette tile to the homepage"
 **Files:**
 - Modify: `css/silhouette.css`
 - Modify: `js/silhouette-scene.js` (resize handling)
+- Modify: `js/silhouette.js` (re-measure the draw canvas on resize)
 
 **Interfaces:**
 - Consumes: everything built in Tasks 1–9. No new public interface.
