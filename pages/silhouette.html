@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Silhouette - Joseph Ayele</title>
+    <link rel="shortcut icon" href="../img/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="../img/favicon.ico" type="image/x-icon">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="Draw a line and watch it become a 3D surface: sketch in two dimensions, then see your stroke rendered as a silhouette in your browser">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/silhouette.css">
+    <link rel="stylesheet" href="../css/effects.css">
+</head>
+<body class="silhouette-body">
+    <a href="../index.html" class="silhouette-home-link"><strong>Joseph Ayele</strong></a>
+
+    <header class="silhouette-header">
+        <h1>Silhouette</h1>
+        <p>Click and drag to draw a line, then release it to see the stroke rise into a 3D surface. Pick a color and save the result as an image.</p>
+    </header>
+
+    <main class="silhouette-main">
+        <div class="silhouette-canvas-wrap">
+            <canvas id="silhouette-draw-canvas"></canvas>
+            <div id="silhouette-scene-container" class="hide"></div>
+            <p class="silhouette-draw-hint" id="silhouette-draw-hint">Click and drag to draw a line — release to see it in 3D</p>
+        </div>
+
+        <aside class="silhouette-controls">
+            <div class="control-group">
+                <h2>Surface color</h2>
+                <div class="color-swatches" id="silhouette-color-swatches"></div>
+            </div>
+
+            <div class="control-group control-actions">
+                <button type="button" class="action-btn" id="silhouette-clear-btn">Clear</button>
+                <button type="button" class="action-btn action-btn--primary" id="silhouette-save-btn" disabled>Save image</button>
+            </div>
+        </aside>
+    </main>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/0.160.0/three.min.js"></script>
+    <script src="../js/silhouette-scene.js"></script>
+    <script src="../js/silhouette.js"></script>
+    <script src="../js/effects.js"></script>
+</body>
+</html>
