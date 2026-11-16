@@ -127,51 +127,22 @@
 }
 
 .color-swatch {
-  position: relative;
   width: 42px;
   height: 42px;
-}
-
-.color-swatch input[type="color"] {
-  width: 100%;
-  height: 100%;
-  border: 2px solid var(--border-color);
   border-radius: 8px;
+  border: 2px solid transparent;
   padding: 0;
   cursor: pointer;
-  background: none;
+  transition: var(--transition);
 }
 
-.color-swatch input[type="color"]::-webkit-color-swatch-wrapper {
-  padding: 2px;
+.color-swatch:hover {
+  transform: translateY(-2px);
 }
 
-.color-swatch input[type="color"]::-webkit-color-swatch {
-  border: none;
-  border-radius: 5px;
-}
-
-.color-swatch-remove {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  border: none;
-  background: var(--primary-text);
-  color: white;
-  font-size: 0.6875rem;
-  line-height: 1;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-}
-
-.color-swatch-remove:hover {
-  background: var(--accent-dark);
+.color-swatch.is-active {
+  border-color: var(--primary-text);
+  transform: translateY(-2px);
 }
 
 .control-actions {

@@ -24,6 +24,16 @@
   const FILL_LIGHT_INTENSITY = 0.85;
   const MESH_COLOR = 0x8b7355;
 
+  // Task 7: surface color. pendingColor is what the *next* buildMesh() call
+  // (whether from a fresh showProfile() reveal or a mid-sweep frame) uses as
+  // its material color. setColor() below always updates this, and also
+  // live-updates the current mesh's material when one exists. Starting it
+  // at MESH_COLOR means the very first object still reveals in the original
+  // Task 3 default until a swatch is clicked. Deliberately NOT reset by
+  // reset() (Task 6's Clear) — a color picked before Clear should still be
+  // what the next drawn object reveals in.
+  let pendingColor = MESH_COLOR;
+
   // Drag-to-orbit + idle auto-spin (Task 5) tuning constants.
   // Radians of azimuth/elevation per pixel of pointer drag delta.
   const DRAG_AZIMUTH_SPEED = 0.008;
@@ -266,7 +276,7 @@
       typeof phiLength === 'number' ? phiLength : Math.PI * 2
     );
     const material = new THREE.MeshStandardMaterial({
-      color: MESH_COLOR,
+      color: pendingColor,
       side: THREE.DoubleSide,
       roughness: 0.6
     });
@@ -443,5 +453,18 @@
     return hasMesh;
   }
 
-  window.SilhouetteScene = { init, buildMesh, showProfile, reset, hasObject };
+  // Task 7: called by a swatch click in js/silhouette.js. Always records
+  // the choice as pendingColor so it survives into whatever buildMesh()
+  // call comes next (mid-sweep frame, or a brand-new showProfile() after a
+  // Clear); additionally pokes the live material when a mesh already
+  // exists, so the current object's surface recolors immediately without
+  // waiting for another reveal.
+  function setColor(hex) {
+    pendingColor = hex;
+    if (currentMesh) {
+      currentMesh.material.color.set(hex);
+    }
+  }
+
+  window.SilhouetteScene = { init, buildMesh, showProfile, reset, hasObject, setColor };
 })();

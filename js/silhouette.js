@@ -70,8 +70,44 @@ if (typeof document !== 'undefined') {
     const canvas = document.getElementById('silhouette-draw-canvas');
     const clearBtn = document.getElementById('silhouette-clear-btn');
     const sceneContainer = document.getElementById('silhouette-scene-container');
+    const swatchesWrap = document.getElementById('silhouette-color-swatches');
 
     if (!canvas) return;
+
+    // --- Task 7: surface color swatches ---
+    //
+    // A fixed small palette, not fractals.js's editable add/remove
+    // `<input type="color">` list (js/fractals.js:264-299) — there's one
+    // target color here, not an editable set, so plain clickable buttons
+    // with an inline background-color are enough. Drawn from the site's
+    // own warm-brown/cream palette plus its accent color; the first entry
+    // matches Task 3's hardcoded default mesh color (0x8b7355) so the
+    // initially-active swatch is accurate without an extra setColor() call
+    // before any object exists.
+    const COLOR_SWATCHES = ['#8b7355', '#5c4330', '#c9a66b', '#e4d6a4', '#2d2822', '#0032f9'];
+    let activeSwatchColor = COLOR_SWATCHES[0];
+
+    function buildColorSwatches() {
+      if (!swatchesWrap) return;
+      swatchesWrap.innerHTML = '';
+      COLOR_SWATCHES.forEach((hex) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'color-swatch' + (hex === activeSwatchColor ? ' is-active' : '');
+        btn.style.backgroundColor = hex;
+        btn.setAttribute('aria-label', `Set surface color to ${hex}`);
+        btn.addEventListener('click', () => {
+          activeSwatchColor = hex;
+          // Safe before any line is drawn / mesh exists — setColor() just
+          // stashes it as the pending color for the next reveal.
+          SilhouetteScene.setColor(hex);
+          buildColorSwatches();
+        });
+        swatchesWrap.appendChild(btn);
+      });
+    }
+
+    buildColorSwatches();
 
     const ctx = canvas.getContext('2d');
 
