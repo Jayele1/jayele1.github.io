@@ -450,6 +450,6 @@ In the browser, at both desktop (~1200px) and mobile (375px) widths:
 - [ ] **Step 3: Commit**
 
 ```bash
-git add css/silhouette.css js/silhouette-scene.js
+git add css/silhouette.css js/silhouette-scene.js js/silhouette.js
 git commit -m "Add Silhouette resize handling and final polish"
 ```
