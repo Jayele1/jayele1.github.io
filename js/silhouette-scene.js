@@ -7,11 +7,22 @@
 
 (() => {
   const LATHE_SEGMENTS = 48;
+  // THREE.LatheGeometry places each profile point at
+  //   (x, y, z) = (radius * sin(phi), height, radius * cos(phi)),
+  // so phi = 0 is the YZ plane (x = 0) — edge-on to a camera looking down
+  // -Z. phi = π/2 gives (radius, height, 0): the XY plane, which is exactly
+  // where the ortho reveal camera expects the unrevolved ribbon to sit, so
+  // the sweep starts on top of the drawn stroke's own pixels.
+  const LATHE_PHI_START = Math.PI / 2;
+  // The sweep's first painted frame. Small enough to read as the drawn
+  // line itself (projected width radius * (1 - cos 0.2) ≈ 2% of radius),
+  // but non-zero so that frame isn't a zero-area, invisible mesh.
+  const REVEAL_START_PHI = 0.2;
   // Duplicated from js/silhouette.js's constants of the same name: this file
   // is loaded as its own classic <script>, so a top-level const in that file
   // isn't visible here. Keep these in sync with js/silhouette.js.
   const DRAW_LOGICAL_SIZE = 600;
-  const WORLD_SCALE = 1 / 300;
+  const WORLD_SCALE = 2 / DRAW_LOGICAL_SIZE;
   const REVEAL_DURATION_MS = 1200;
   const AMBIENT_INTENSITY = 0.5;
   const KEY_LIGHT_INTENSITY = 0.9;
@@ -274,6 +285,14 @@
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(width, height);
     renderer.setPixelRatio(window.devicePixelRatio || 1);
+    // One opaque white background for the renderer's whole life — the same
+    // #ffffff the 2D draw canvas fills itself with (js/silhouette.js
+    // clearCanvasSurface). Using it through BOTH the ortho reveal and the
+    // perspective/orbit view means: no seam in the ortho frustum's
+    // left-of-axis margin (nothing draws there, so it must not show the
+    // wrap's cream through), and no white->cream flip at the camera
+    // handoff. Draw mode, reveal, and orbit all share one backdrop.
+    renderer.setClearColor(0xffffff, 1);
     container.appendChild(renderer.domElement);
 
     const ambientLight = new THREE.AmbientLight(0xffffff, AMBIENT_INTENSITY);
@@ -305,13 +324,14 @@
 
   function buildMesh(profile, phiLength) {
     const points = profile.map((p) => new THREE.Vector2(p.radius, p.height));
-    // phiStart fixed at 0; phiLength defaults to a full revolution so
-    // existing callers (and the Task 3 debug path) are unaffected. The
+    // phiStart is LATHE_PHI_START (π/2) so the sweep's first edge lies in
+    // the XY plane the ortho reveal camera is pixel-matched to (see the
+    // constant's comment). phiLength defaults to a full revolution; the
     // reveal sweep (showProfile) passes a growing phiLength each frame.
     const geometry = new THREE.LatheGeometry(
       points,
       LATHE_SEGMENTS,
-      0,
+      LATHE_PHI_START,
       typeof phiLength === 'number' ? phiLength : Math.PI * 2
     );
     const material = new THREE.MeshStandardMaterial({
@@ -348,8 +368,9 @@
     //   height = (canvasLogicalSize - canvasY) * WORLD_SCALE
     // i.e. a plain shift-by-axisX-then-scale of the canvas's pixel columns
     // (and a flip+scale of its rows, with no per-stroke shift). A LatheGeometry
-    // at phiLength≈0 just places its points at those (radius, height)
-    // world coordinates, unrevolved — a flat ribbon sitting exactly where
+    // at phiLength≈0 with phiStart = LATHE_PHI_START (π/2) places its points
+    // at world (x=radius, y=height, z=0), unrevolved — a flat ribbon in the
+    // XY plane facing this camera, sitting exactly where
     // the stroke's own pixels were, up to that shift+scale.
     //
     // For the camera to show that ribbon at the real on-screen position the
@@ -390,15 +411,6 @@
     orthoCamera.position.set(0, 0, 10); // +Z axis, looking down -Z (default orientation)
     camera = orthoCamera;
 
-    // Extending the frustum left of the mesh's own x=0 (whenever axisX > 0)
-    // leaves a margin, to the left of the ribbon, that nothing draws into.
-    // Render that margin as opaque white — matching the draw canvas's own
-    // fill color — instead of letting the (alpha:true) renderer show the
-    // page's cream background through it, which would otherwise appear as
-    // a colored seam right at the handoff moment. Restored to transparent
-    // once we hand off to the perspective camera below.
-    renderer.setClearColor(0xffffff, 1);
-
     // Hide the 2D draw canvas and show the 3D container right now, so the
     // ribbon appears in the same frame the stroke's own pixels disappear
     // from — this is what Step 2 means by "no jump/flash at the start".
@@ -410,15 +422,24 @@
     // match its real on-screen size.
     handleResize();
 
-    // --- Step 2: sweep phiLength 0 -> 2π while handing the camera off ---
-    currentPhiLength = 0;
+    // --- Step 2: sweep phiLength REVEAL_START_PHI -> 2π while handing the camera off ---
+    // Not from exactly 0: a zero-length lathe has zero area and rasterizes
+    // to nothing, and the animate loop paints the initial mesh before the
+    // first sweep frame runs — so starting at 0 showed a blank frame right
+    // as the 2D stroke was hidden. See REVEAL_START_PHI.
+    currentPhiLength = REVEAL_START_PHI;
     buildMesh(profile, currentPhiLength);
 
     const startTime = performance.now();
 
     function frame(now) {
-      const t = Math.min(1, (now - startTime) / REVEAL_DURATION_MS);
-      currentPhiLength = easeOutCubic(t) * Math.PI * 2;
+      // rAF's timestamp is the frame's start, which can precede startTime.
+      const t = Math.max(0, Math.min(1, (now - startTime) / REVEAL_DURATION_MS));
+      // Pin the last frame to exactly 2π so the finished object closes
+      // with no floating-point sliver of a gap at the seam.
+      currentPhiLength = t >= 1
+        ? Math.PI * 2
+        : REVEAL_START_PHI + easeOutCubic(t) * (Math.PI * 2 - REVEAL_START_PHI);
       const mesh = buildMesh(profile, currentPhiLength);
 
       if (t < 1) {
@@ -448,7 +469,6 @@
 
       camera = perspectiveCamera;
       orthoActive = false; // handleResize() should treat this as perspective/orbit now
-      renderer.setClearColor(0x000000, 0); // back to transparent for the settled view
 
       // Hand off to Task 5's drag-to-orbit/idle-spin: start the idle-spin
       // clock now (not from whenever init() happened to run) so the ~2s
@@ -523,5 +543,5 @@
     }
   }
 
-  window.SilhouetteScene = { init, buildMesh, showProfile, reset, hasObject, setColor, exportImage };
+  window.SilhouetteScene = { init, showProfile, reset, hasObject, setColor, exportImage };
 })();
