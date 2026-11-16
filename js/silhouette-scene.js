@@ -60,6 +60,19 @@
   let currentPhiLength = Math.PI * 2;
   let revealRafId = null;
 
+  // Task 10: resize-handling state. orthoActive is true from the moment
+  // showProfile() creates the pixel-matched orthographic reveal camera
+  // until the reveal's final frame hands off to the perspective/orbit
+  // camera (or until reset() tears the object down) — i.e. exactly the
+  // window during which `camera` is the OrthographicCamera whose frustum
+  // has to stay pixel-matched to the draw canvas (see showProfile's own
+  // comment for why). lastAxisX/lastCanvasLogicalSize stash the two
+  // showProfile() inputs that frustum is derived from, so handleResize()
+  // can recompute it on demand without showProfile() needing to re-run.
+  let orthoActive = false;
+  let lastAxisX = 0;
+  let lastCanvasLogicalSize = DRAW_LOGICAL_SIZE;
+
   // Orbit state handed off to Task 5: spherical coordinates around the
   // object's own bounding-sphere center, with a fixed radius chosen by the
   // auto-fit at the end of the reveal.
@@ -212,6 +225,32 @@
     const width = Math.max(1, rect.width);
     const height = Math.max(1, rect.height);
     renderer.setSize(width, height);
+    // Re-sync in case the window moved to a display with a different
+    // devicePixelRatio since init() (a plain same-display resize leaves
+    // this unchanged, so it's a no-op cost-wise in the common case).
+    renderer.setPixelRatio(window.devicePixelRatio || 1);
+
+    if (orthoActive) {
+      // Mid-reveal: `camera` is the orthographic camera showProfile() built,
+      // pixel-matched to the draw canvas (see the long comment in
+      // showProfile() for the derivation). That frustum depends only on
+      // lastAxisX/lastCanvasLogicalSize — the draw canvas's own logical
+      // coordinate space — never on the container's on-screen pixel size,
+      // so recomputing it here (rather than leaving left/right/top/bottom
+      // stale, or wrongly treating this like a perspective camera via
+      // .aspect, which OrthographicCamera ignores) is what keeps the
+      // reveal pixel-aligned with the stroke through a resize.
+      camera.left = -lastAxisX * WORLD_SCALE;
+      camera.right = (lastCanvasLogicalSize - lastAxisX) * WORLD_SCALE;
+      camera.bottom = 0;
+      camera.top = lastCanvasLogicalSize * WORLD_SCALE;
+      camera.updateProjectionMatrix();
+      return;
+    }
+
+    // Perspective/orbit mode (or the initial static camera from init(),
+    // before any reveal has run) — no pixel-matched frustum to maintain,
+    // so a plain aspect-ratio update is enough.
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
   }
@@ -333,6 +372,13 @@
     const orthoBottom = 0;
     const orthoTop = canvasLogicalSize * WORLD_SCALE;
 
+    // Task 10: stash the inputs this frustum is derived from, and mark the
+    // ortho camera as the active one, so handleResize() can recompute the
+    // same frustum (not a stale one) if a resize lands mid-reveal.
+    lastAxisX = axisX;
+    lastCanvasLogicalSize = canvasLogicalSize;
+    orthoActive = true;
+
     const orthoCamera = new THREE.OrthographicCamera(
       orthoLeft,
       orthoRight,
@@ -401,6 +447,7 @@
       perspectiveCamera.lookAt(0, originY, 0);
 
       camera = perspectiveCamera;
+      orthoActive = false; // handleResize() should treat this as perspective/orbit now
       renderer.setClearColor(0x000000, 0); // back to transparent for the settled view
 
       // Hand off to Task 5's drag-to-orbit/idle-spin: start the idle-spin
@@ -442,6 +489,7 @@
 
     detachOrbitListeners();
     orbitActive = false;
+    orthoActive = false;
     isPointerDown = false;
     activePointerId = null;
     lastDragTime = 0;

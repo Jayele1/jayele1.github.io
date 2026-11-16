@@ -234,6 +234,18 @@ if (typeof document !== 'undefined') {
     clearCanvasSurface();
     updateSaveButton();
 
+    // Task 10: resize handling. logicalPointFromEvent() above already calls
+    // canvas.getBoundingClientRect() fresh on every pointerdown/pointermove
+    // (mirroring js/fractals.js's own logicalPointFromEvent) rather than
+    // caching it, so in-progress or future strokes always map against the
+    // canvas's current on-screen rect with no extra work needed here. What
+    // this listener still has to do: re-run sizeCanvas() in case
+    // devicePixelRatio changed (e.g. the window moved to a different
+    // display), which — like fractals.js's sizeCanvases() — implicitly
+    // clears the canvas bitmap, so clearCanvasSurface() restores the white
+    // fill; and drop any in-progress stroke (drawPoints) rather than try to
+    // remap its already-captured logical points, since those were resampled
+    // from screen positions under the pre-resize rect.
     window.addEventListener('resize', () => {
       sizeCanvas();
       clearCanvasSurface();
