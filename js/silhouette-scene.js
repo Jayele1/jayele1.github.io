@@ -7,6 +7,12 @@
 
 (() => {
   const LATHE_SEGMENTS = 48;
+  // Duplicated from js/silhouette.js's constants of the same name: this file
+  // is loaded as its own classic <script>, so a top-level const in that file
+  // isn't visible here. Keep these in sync with js/silhouette.js.
+  const DRAW_LOGICAL_SIZE = 600;
+  const WORLD_SCALE = 1 / 300;
+  const REVEAL_DURATION_MS = 1200;
   const AMBIENT_INTENSITY = 0.5;
   const KEY_LIGHT_INTENSITY = 0.9;
   // Fill light is deliberately strong and placed from the opposite side/lower
@@ -22,7 +28,35 @@
   let camera = null;
   let renderer = null;
   let container = null;
+  let drawCanvasEl = null;
   let currentMesh = null;
+
+  // Reveal-sweep + camera-handoff state (Task 4). currentPhiLength tracks
+  // the lathe's current reveal angle so a repeated showProfile() call, or a
+  // later idle-spin/orbit step (Task 5), can see where the sweep left off.
+  let currentPhiLength = Math.PI * 2;
+  let revealRafId = null;
+
+  // Orbit state handed off to Task 5: spherical coordinates around the
+  // object's own bounding-sphere center, with a fixed radius chosen by the
+  // auto-fit at the end of the reveal.
+  let orbitRadius = 1;
+  let orbitAzimuth = Math.PI / 6;
+  let orbitElevation = Math.PI / 2 - 0.35;
+  let originY = 0;
+
+  function easeOutCubic(t) {
+    return 1 - Math.pow(1 - t, 3);
+  }
+
+  function orbitCameraPosition() {
+    const sinE = Math.sin(orbitElevation);
+    return new THREE.Vector3(
+      orbitRadius * sinE * Math.sin(orbitAzimuth),
+      originY + orbitRadius * Math.cos(orbitElevation),
+      orbitRadius * sinE * Math.cos(orbitAzimuth)
+    );
+  }
 
   function render() {
     if (!renderer || !scene || !camera) return;
@@ -46,6 +80,7 @@
 
   function init(containerEl, drawCanvas) {
     container = containerEl;
+    drawCanvasEl = drawCanvas;
 
     scene = new THREE.Scene();
 
@@ -83,9 +118,17 @@
     requestAnimationFrame(animate);
   }
 
-  function buildMesh(profile) {
+  function buildMesh(profile, phiLength) {
     const points = profile.map((p) => new THREE.Vector2(p.radius, p.height));
-    const geometry = new THREE.LatheGeometry(points, LATHE_SEGMENTS);
+    // phiStart fixed at 0; phiLength defaults to a full revolution so
+    // existing callers (and the Task 3 debug path) are unaffected. The
+    // reveal sweep (showProfile) passes a growing phiLength each frame.
+    const geometry = new THREE.LatheGeometry(
+      points,
+      LATHE_SEGMENTS,
+      0,
+      typeof phiLength === 'number' ? phiLength : Math.PI * 2
+    );
     const material = new THREE.MeshStandardMaterial({
       color: MESH_COLOR,
       side: THREE.DoubleSide,
@@ -104,7 +147,122 @@
     return currentMesh;
   }
 
-  window.SilhouetteScene = { init, buildMesh };
+  function showProfile(profile, axisX, canvasLogicalSize) {
+    if (!scene || !renderer || !container) return;
+
+    if (revealRafId !== null) {
+      cancelAnimationFrame(revealRafId);
+      revealRafId = null;
+    }
+
+    // --- Step 1: orthographic reveal camera, pixel-matched to the draw canvas ---
+    //
+    // js/silhouette.js derives each profile point from the raw stroke as:
+    //   radius = (canvasX - axisX) * WORLD_SCALE
+    //   height = (canvasLogicalSize - canvasY) * WORLD_SCALE
+    // i.e. a plain shift-by-axisX-then-scale of the canvas's pixel columns
+    // (and a flip+scale of its rows, with no per-stroke shift). A LatheGeometry
+    // at phiLength≈0 just places its points at those (radius, height)
+    // world coordinates, unrevolved — a flat ribbon sitting exactly where
+    // the stroke's own pixels were, up to that shift+scale.
+    //
+    // For the camera to show that ribbon at the real on-screen position the
+    // stroke was drawn (not shifted/zoomed), its frustum has to invert the
+    // *same* shift+scale across the *entire* canvas width, not just the
+    // slice to the right of axisX. Canvas column 0 must map to
+    // world x = -axisX * WORLD_SCALE, and canvas column canvasLogicalSize
+    // must map to world x = (canvasLogicalSize - axisX) * WORLD_SCALE — so
+    // camera.left is -axisX * WORLD_SCALE, not 0. (0 would narrow the
+    // frustum to only the [axisX, canvasLogicalSize] slice of the canvas
+    // and stretch that slice across the whole viewport, visibly shifting
+    // the ribbon away from its drawn position whenever axisX isn't ~0 —
+    // i.e. almost always, since axisX is the stroke's own leftmost x, not
+    // the canvas's left edge.) Vertically there's no analogous per-stroke
+    // shift — height already spans the full canvas row range
+    // [0, canvasLogicalSize] — so bottom=0 / top=canvasLogicalSize*WORLD_SCALE
+    // is correct as literally given.
+    const orthoLeft = -axisX * WORLD_SCALE;
+    const orthoRight = (canvasLogicalSize - axisX) * WORLD_SCALE;
+    const orthoBottom = 0;
+    const orthoTop = canvasLogicalSize * WORLD_SCALE;
+
+    const orthoCamera = new THREE.OrthographicCamera(
+      orthoLeft,
+      orthoRight,
+      orthoTop,
+      orthoBottom,
+      0.1,
+      100
+    );
+    orthoCamera.position.set(0, 0, 10); // +Z axis, looking down -Z (default orientation)
+    camera = orthoCamera;
+
+    // Extending the frustum left of the mesh's own x=0 (whenever axisX > 0)
+    // leaves a margin, to the left of the ribbon, that nothing draws into.
+    // Render that margin as opaque white — matching the draw canvas's own
+    // fill color — instead of letting the (alpha:true) renderer show the
+    // page's cream background through it, which would otherwise appear as
+    // a colored seam right at the handoff moment. Restored to transparent
+    // once we hand off to the perspective camera below.
+    renderer.setClearColor(0xffffff, 1);
+
+    // Hide the 2D draw canvas and show the 3D container right now, so the
+    // ribbon appears in the same frame the stroke's own pixels disappear
+    // from — this is what Step 2 means by "no jump/flash at the start".
+    if (drawCanvasEl) drawCanvasEl.classList.add('hide');
+    container.classList.remove('hide');
+    // init() may have measured the container while it was still
+    // display:none (0x0), e.g. when init() runs before the first reveal.
+    // Now that it's visible, re-measure so the renderer/camera actually
+    // match its real on-screen size.
+    handleResize();
+
+    // --- Step 2: sweep phiLength 0 -> 2π while handing the camera off ---
+    currentPhiLength = 0;
+    buildMesh(profile, currentPhiLength);
+
+    const startTime = performance.now();
+
+    function frame(now) {
+      const t = Math.min(1, (now - startTime) / REVEAL_DURATION_MS);
+      currentPhiLength = easeOutCubic(t) * Math.PI * 2;
+      const mesh = buildMesh(profile, currentPhiLength);
+
+      if (t < 1) {
+        revealRafId = requestAnimationFrame(frame);
+        return;
+      }
+
+      // Final frame: auto-fit a perspective camera to the finished mesh's
+      // bounding sphere, with margin, and clamp the fit distance so a
+      // stroke that stays close to the axis (near-zero bounding sphere
+      // radius) never leaves the camera at distance ~0.
+      mesh.geometry.computeBoundingSphere();
+      const sphere = mesh.geometry.boundingSphere;
+      const sphereRadius = sphere ? sphere.radius : 0;
+      const center = sphere ? sphere.center : new THREE.Vector3(0, 0, 0);
+
+      const fov = 45;
+      const fitDistance = (sphereRadius / Math.sin((fov * Math.PI / 180) / 2)) * 1.5;
+      orbitRadius = Math.max(fitDistance, 1);
+      originY = center.y;
+
+      const rect = container.getBoundingClientRect();
+      const aspect = Math.max(1, rect.width) / Math.max(1, rect.height);
+      const perspectiveCamera = new THREE.PerspectiveCamera(fov, aspect, 0.1, 100);
+      perspectiveCamera.position.copy(orbitCameraPosition());
+      perspectiveCamera.lookAt(0, originY, 0);
+
+      camera = perspectiveCamera;
+      renderer.setClearColor(0x000000, 0); // back to transparent for the settled view
+
+      revealRafId = null;
+    }
+
+    revealRafId = requestAnimationFrame(frame);
+  }
+
+  window.SilhouetteScene = { init, buildMesh, showProfile };
 
   // --- Debug harness (Tasks 3-5 only) ---
   //
@@ -117,14 +275,19 @@
     const debugContainer = document.getElementById('silhouette-scene-container');
     const debugCanvas = document.getElementById('silhouette-draw-canvas');
     if (debugContainer) {
-      debugContainer.classList.remove('hide');
       init(debugContainer, debugCanvas);
-      buildMesh([
+      // sampleAxisX is just internally consistent for this debug check
+      // (not derived from a real stroke) — picked away from 0 on purpose
+      // so the ortho-camera alignment fix (camera.left = -axisX * WORLD_SCALE)
+      // actually gets exercised.
+      const sampleAxisX = 100;
+      const sampleProfile = [
         { radius: 0.15, height: 0 },
         { radius: 0.45, height: 0.5 },
         { radius: 0.3, height: 1.1 },
         { radius: 0.55, height: 2 }
-      ]);
+      ];
+      window.SilhouetteScene.showProfile(sampleProfile, sampleAxisX, DRAW_LOGICAL_SIZE);
     }
   }
 })();
