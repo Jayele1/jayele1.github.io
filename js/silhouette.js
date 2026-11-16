@@ -6,7 +6,7 @@ const DRAW_LOGICAL_SIZE = 600;
 const PROFILE_POINT_COUNT = 40;
 const MIN_STROKE_LENGTH_PX = 20;
 const MIN_RADIUS_PX = 2;
-const WORLD_SCALE = 1 / 300;
+const WORLD_SCALE = 2 / DRAW_LOGICAL_SIZE;
 
 // --- Pure math (no DOM access; required from Node by the verification step) ---
 
@@ -72,8 +72,18 @@ if (typeof document !== 'undefined') {
     const sceneContainer = document.getElementById('silhouette-scene-container');
     const swatchesWrap = document.getElementById('silhouette-color-swatches');
     const saveBtn = document.getElementById('silhouette-save-btn');
+    const drawHint = document.getElementById('silhouette-draw-hint');
 
     if (!canvas) return;
+
+    // The hint describes whichever mode the frame is in: drawing (the HTML's
+    // own text, captured here so Clear can restore it verbatim) or orbiting
+    // the revealed object, where a drag rotates the camera instead.
+    const DRAW_HINT_TEXT = drawHint ? drawHint.textContent : '';
+    const ORBIT_HINT_TEXT = 'Drag to orbit · Clear to draw again';
+    function setHint(text) {
+      if (drawHint) drawHint.textContent = text;
+    }
 
     // --- Task 8: Save image enabled state ---
     //
@@ -189,6 +199,7 @@ if (typeof document !== 'undefined') {
         sceneInitialized = true;
       }
       SilhouetteScene.showProfile(points, axisX, DRAW_LOGICAL_SIZE);
+      setHint(ORBIT_HINT_TEXT);
       updateSaveButton();
     }
 
@@ -217,6 +228,7 @@ if (typeof document !== 'undefined') {
         clearCanvasSurface();
         canvas.classList.remove('hide');
         if (sceneContainer) sceneContainer.classList.add('hide');
+        setHint(DRAW_HINT_TEXT);
         updateSaveButton();
       });
     }

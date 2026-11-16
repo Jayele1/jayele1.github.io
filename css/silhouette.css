@@ -75,6 +75,9 @@
   display: block;
   width: 100%;
   height: 100%;
+  /* Without this, a touch drag is claimed by the browser as a page
+     scroll/pan (pointercancel fires and the stroke is dropped). */
+  touch-action: none;
 }
 
 #silhouette-draw-canvas.hide,
@@ -85,16 +88,31 @@
 .silhouette-draw-hint {
   position: absolute;
   bottom: 0.9rem;
-  left: 50%;
-  transform: translateX(-50%);
+  /* Pinned inside the frame on both sides and centered via auto margins
+     (not left:50% + translate, which caps the shrink-to-fit width at half
+     the frame), so long text wraps instead of overflowing on narrow screens. */
+  left: 0.75rem;
+  right: 0.75rem;
+  width: fit-content;
+  max-width: calc(100% - 1.5rem);
+  margin: 0 auto;
+  text-align: center;
   background: rgba(45, 40, 34, 0.85);
   color: var(--soft-cream);
   font-family: 'Inter', sans-serif;
   font-size: 0.8125rem;
+  line-height: 1.35;
   padding: 0.5rem 0.9rem;
   border-radius: var(--border-radius);
   pointer-events: none;
-  white-space: nowrap;
+}
+
+@media (max-width: 480px) {
+  .silhouette-draw-hint {
+    font-size: 0.75rem;
+    padding: 0.4rem 0.7rem;
+    bottom: 0.6rem;
+  }
 }
 
 .silhouette-controls {
