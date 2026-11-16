@@ -453,6 +453,15 @@
     return hasMesh;
   }
 
+  // Returns a PNG data URL of the current 3D view. Re-renders first: the
+  // WebGL drawing buffer isn't preserved between frames (preserveDrawingBuffer
+  // is off), so reading the canvas from a click handler can otherwise return
+  // a blank image once the animate loop's last frame has been composited.
+  function exportImage() {
+    render();
+    return renderer.domElement.toDataURL('image/png');
+  }
+
   // Task 7: called by a swatch click in js/silhouette.js. Always records
   // the choice as pendingColor so it survives into whatever buildMesh()
   // call comes next (mid-sweep frame, or a brand-new showProfile() after a
@@ -466,5 +475,5 @@
     }
   }
 
-  window.SilhouetteScene = { init, buildMesh, showProfile, reset, hasObject, setColor };
+  window.SilhouetteScene = { init, buildMesh, showProfile, reset, hasObject, setColor, exportImage };
 })();

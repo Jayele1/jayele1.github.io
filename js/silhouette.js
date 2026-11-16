@@ -71,8 +71,26 @@ if (typeof document !== 'undefined') {
     const clearBtn = document.getElementById('silhouette-clear-btn');
     const sceneContainer = document.getElementById('silhouette-scene-container');
     const swatchesWrap = document.getElementById('silhouette-color-swatches');
+    const saveBtn = document.getElementById('silhouette-save-btn');
 
     if (!canvas) return;
+
+    // --- Task 8: Save image enabled state ---
+    //
+    // Save is only meaningful once a 3D object exists. Enabled as soon as a
+    // reveal starts (showProfile() builds the mesh synchronously, so
+    // hasObject() is already true right after it returns); disabled again on
+    // Clear.
+    function updateSaveButton() {
+      if (saveBtn) saveBtn.disabled = !SilhouetteScene.hasObject();
+    }
+
+    function saveImage() {
+      const link = document.createElement('a');
+      link.download = `silhouette-${Date.now()}.png`;
+      link.href = SilhouetteScene.exportImage();
+      link.click();
+    }
 
     // --- Task 7: surface color swatches ---
     //
@@ -171,6 +189,7 @@ if (typeof document !== 'undefined') {
         sceneInitialized = true;
       }
       SilhouetteScene.showProfile(points, axisX, DRAW_LOGICAL_SIZE);
+      updateSaveButton();
     }
 
     canvas.addEventListener('pointerdown', (evt) => {
@@ -198,6 +217,14 @@ if (typeof document !== 'undefined') {
         clearCanvasSurface();
         canvas.classList.remove('hide');
         if (sceneContainer) sceneContainer.classList.add('hide');
+        updateSaveButton();
+      });
+    }
+
+    if (saveBtn) {
+      saveBtn.addEventListener('click', () => {
+        if (!SilhouetteScene.hasObject()) return;
+        saveImage();
       });
     }
 
@@ -205,6 +232,7 @@ if (typeof document !== 'undefined') {
 
     sizeCanvas();
     clearCanvasSurface();
+    updateSaveButton();
 
     window.addEventListener('resize', () => {
       sizeCanvas();
