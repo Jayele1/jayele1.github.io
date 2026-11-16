@@ -34,7 +34,7 @@
   // How long after the last drag input before auto-spin resumes, and how
   // fast (radians/sec) it spins once it does.
   const IDLE_SPIN_DELAY_MS = 2000;
-  const IDLE_SPIN_SPEED = 0.25;
+  const IDLE_SPIN_SPEED = 0.15;
 
   let scene = null;
   let camera = null;
