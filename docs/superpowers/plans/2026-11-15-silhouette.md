@@ -326,6 +326,7 @@ git commit -m "Wire Silhouette drawing to the 3D reveal with Clear/teardown"
 **Files:**
 - Modify: `js/silhouette.js`
 - Modify: `js/silhouette-scene.js`
+- Modify: `css/silhouette.css` (Task 1's `.color-swatch` rules styled an `<input type="color">` swatch, which this task's plain-button swatches replace — update those rules, and add `.color-swatch.is-active` reusing `.palette-btn.is-active`'s look, per Step 2 below)
 
 **Interfaces:**
 - Consumes: `#silhouette-color-swatches` (Task 1), `SilhouetteScene.setColor(hex)`.
