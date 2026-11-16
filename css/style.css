@@ -229,6 +229,10 @@ body {
   background: url('../img/fractal-thumb.png') center / cover no-repeat;
 }
 
+.project-image--silhouette {
+  background: url('../img/silhouette-thumb.png') center / cover no-repeat;
+}
+
 .project-image--perceiving {
   background: #000;
   display: flex;
