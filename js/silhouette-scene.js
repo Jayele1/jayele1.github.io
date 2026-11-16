@@ -24,6 +24,18 @@
   const FILL_LIGHT_INTENSITY = 0.85;
   const MESH_COLOR = 0x8b7355;
 
+  // Drag-to-orbit + idle auto-spin (Task 5) tuning constants.
+  // Radians of azimuth/elevation per pixel of pointer drag delta.
+  const DRAG_AZIMUTH_SPEED = 0.008;
+  const DRAG_ELEVATION_SPEED = 0.008;
+  // Keep the camera away from the poles so it can never flip upside down.
+  const ELEVATION_MIN = 0.1;
+  const ELEVATION_MAX = Math.PI - 0.1;
+  // How long after the last drag input before auto-spin resumes, and how
+  // fast (radians/sec) it spins once it does.
+  const IDLE_SPIN_DELAY_MS = 2000;
+  const IDLE_SPIN_SPEED = 0.25;
+
   let scene = null;
   let camera = null;
   let renderer = null;
@@ -45,6 +57,19 @@
   let orbitElevation = Math.PI / 2 - 0.35;
   let originY = 0;
 
+  // Drag-to-orbit + idle auto-spin (Task 5) runtime state. orbitActive
+  // gates the per-frame orbit/spin update so it only runs once the reveal
+  // handoff in showProfile() has produced a perspective camera to drive —
+  // it's false for the whole reveal sweep (and before the first reveal),
+  // and flips true on the final frame of showProfile().
+  let orbitActive = false;
+  let isPointerDown = false;
+  let activePointerId = null;
+  let lastPointerX = 0;
+  let lastPointerY = 0;
+  let lastDragTime = 0;
+  let lastFrameTime = null;
+
   function easeOutCubic(t) {
     return 1 - Math.pow(1 - t, 3);
   }
@@ -63,9 +88,85 @@
     renderer.render(scene, camera);
   }
 
-  function animate() {
+  // Recomputes the perspective camera's position/lookAt from the current
+  // orbitAzimuth/orbitElevation each frame — the single place that reads
+  // those values and writes to the camera, whether they changed this frame
+  // because of a drag (pointermove below) or idle auto-spin (here).
+  function updateOrbit(deltaSeconds) {
+    if (!orbitActive || !camera) return;
+
+    if (!isPointerDown && Date.now() - lastDragTime > IDLE_SPIN_DELAY_MS) {
+      orbitAzimuth += IDLE_SPIN_SPEED * deltaSeconds;
+    }
+
+    camera.position.copy(orbitCameraPosition());
+    camera.lookAt(0, originY, 0);
+  }
+
+  function animate(timestamp) {
+    const now = typeof timestamp === 'number' ? timestamp : performance.now();
+    const deltaSeconds = lastFrameTime !== null ? Math.max(0, (now - lastFrameTime) / 1000) : 0;
+    lastFrameTime = now;
+
+    updateOrbit(deltaSeconds);
     render();
     requestAnimationFrame(animate);
+  }
+
+  // --- Drag-to-orbit pointer handlers (Task 5) ---
+  //
+  // Hand-rolled instead of Three.js's OrbitControls addon: that addon ships
+  // as an ES module, and every script on this site (Three.js included,
+  // loaded here as a classic global script with no import maps) is a
+  // classic script — pulling in one ES-module addon would be the only
+  // module-based script on the whole site. These handlers only ever write
+  // to orbitAzimuth/orbitElevation/isPointerDown/lastDragTime; the actual
+  // camera.position/lookAt recompute happens once per frame in
+  // updateOrbit() above, not here.
+  function onPointerDown(event) {
+    isPointerDown = true;
+    activePointerId = event.pointerId;
+    lastPointerX = event.clientX;
+    lastPointerY = event.clientY;
+    lastDragTime = Date.now();
+    if (container && container.setPointerCapture) {
+      try {
+        container.setPointerCapture(event.pointerId);
+      } catch (e) {
+        // Ignore — pointer capture is a nice-to-have, not required for
+        // the drag math below to work.
+      }
+    }
+  }
+
+  function onPointerMove(event) {
+    if (!isPointerDown || event.pointerId !== activePointerId) return;
+
+    const dx = event.clientX - lastPointerX;
+    const dy = event.clientY - lastPointerY;
+    lastPointerX = event.clientX;
+    lastPointerY = event.clientY;
+
+    orbitAzimuth += dx * DRAG_AZIMUTH_SPEED;
+    orbitElevation = Math.min(
+      ELEVATION_MAX,
+      Math.max(ELEVATION_MIN, orbitElevation + dy * DRAG_ELEVATION_SPEED)
+    );
+    lastDragTime = Date.now();
+  }
+
+  function onPointerUp(event) {
+    if (event.pointerId !== activePointerId) return;
+    isPointerDown = false;
+    activePointerId = null;
+    lastDragTime = Date.now();
+    if (container && container.releasePointerCapture) {
+      try {
+        container.releasePointerCapture(event.pointerId);
+      } catch (e) {
+        // Already released/invalid — nothing to do.
+      }
+    }
   }
 
   function handleResize() {
@@ -114,6 +215,15 @@
     scene.add(fillLight);
 
     window.addEventListener('resize', handleResize);
+
+    // touch-action: none keeps touch drags from also scrolling/zooming the
+    // page while orbiting.
+    container.style.touchAction = 'none';
+    container.style.cursor = 'grab';
+    container.addEventListener('pointerdown', onPointerDown);
+    container.addEventListener('pointermove', onPointerMove);
+    container.addEventListener('pointerup', onPointerUp);
+    container.addEventListener('pointercancel', onPointerUp);
 
     requestAnimationFrame(animate);
   }
@@ -255,6 +365,13 @@
 
       camera = perspectiveCamera;
       renderer.setClearColor(0x000000, 0); // back to transparent for the settled view
+
+      // Hand off to Task 5's drag-to-orbit/idle-spin: start the idle-spin
+      // clock now (not from whenever init() happened to run) so the ~2s
+      // idle delay is measured from the moment the object actually settles
+      // into view.
+      orbitActive = true;
+      lastDragTime = Date.now();
 
       revealRafId = null;
     }
