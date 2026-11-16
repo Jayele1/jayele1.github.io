@@ -69,6 +69,7 @@ if (typeof document !== 'undefined') {
   (() => {
     const canvas = document.getElementById('silhouette-draw-canvas');
     const clearBtn = document.getElementById('silhouette-clear-btn');
+    const sceneContainer = document.getElementById('silhouette-scene-container');
 
     if (!canvas) return;
 
@@ -78,6 +79,7 @@ if (typeof document !== 'undefined') {
     let drawing = false;
     let drawPoints = [];
     let currentProfile = null; // stashed for Task 6 to consume
+    let sceneInitialized = false; // SilhouetteScene.init() runs at most once
 
     function sizeCanvas() {
       dpr = Math.max(1, window.devicePixelRatio || 1);
@@ -126,7 +128,13 @@ if (typeof document !== 'undefined') {
         return;
       }
       currentProfile = profile;
-      // TODO: Task 6 — hand currentProfile off to the 3D scene here.
+
+      const { points, axisX } = profile;
+      if (!sceneInitialized) {
+        SilhouetteScene.init(sceneContainer, canvas);
+        sceneInitialized = true;
+      }
+      SilhouetteScene.showProfile(points, axisX, DRAW_LOGICAL_SIZE);
     }
 
     canvas.addEventListener('pointerdown', (evt) => {
@@ -148,9 +156,12 @@ if (typeof document !== 'undefined') {
 
     if (clearBtn) {
       clearBtn.addEventListener('click', () => {
+        SilhouetteScene.reset();
         currentProfile = null;
         drawPoints = [];
         clearCanvasSurface();
+        canvas.classList.remove('hide');
+        if (sceneContainer) sceneContainer.classList.add('hide');
       });
     }
 

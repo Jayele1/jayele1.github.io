@@ -42,6 +42,7 @@
   let container = null;
   let drawCanvasEl = null;
   let currentMesh = null;
+  let hasMesh = false;
 
   // Reveal-sweep + camera-handoff state (Task 4). currentPhiLength tracks
   // the lathe's current reveal angle so a repeated showProfile() call, or a
@@ -52,9 +53,15 @@
   // Orbit state handed off to Task 5: spherical coordinates around the
   // object's own bounding-sphere center, with a fixed radius chosen by the
   // auto-fit at the end of the reveal.
+  // Initial defaults, also restored by reset() (Task 6) so each new reveal
+  // starts from the same predictable camera angle rather than wherever a
+  // previous object's orbit/idle-spin left off.
+  const ORBIT_AZIMUTH_DEFAULT = Math.PI / 6;
+  const ORBIT_ELEVATION_DEFAULT = Math.PI / 2 - 0.35;
+
   let orbitRadius = 1;
-  let orbitAzimuth = Math.PI / 6;
-  let orbitElevation = Math.PI / 2 - 0.35;
+  let orbitAzimuth = ORBIT_AZIMUTH_DEFAULT;
+  let orbitElevation = ORBIT_ELEVATION_DEFAULT;
   let originY = 0;
 
   // Drag-to-orbit + idle auto-spin (Task 5) runtime state. orbitActive
@@ -169,6 +176,26 @@
     }
   }
 
+  // Attached once a reveal settles into an orbit-able perspective view
+  // (end of showProfile's reveal sweep), and detached by reset() — so a
+  // Clear click during/after one object's orbit never leaves that object's
+  // listeners stacked underneath the next one's.
+  function attachOrbitListeners() {
+    if (!container) return;
+    container.addEventListener('pointerdown', onPointerDown);
+    container.addEventListener('pointermove', onPointerMove);
+    container.addEventListener('pointerup', onPointerUp);
+    container.addEventListener('pointercancel', onPointerUp);
+  }
+
+  function detachOrbitListeners() {
+    if (!container) return;
+    container.removeEventListener('pointerdown', onPointerDown);
+    container.removeEventListener('pointermove', onPointerMove);
+    container.removeEventListener('pointerup', onPointerUp);
+    container.removeEventListener('pointercancel', onPointerUp);
+  }
+
   function handleResize() {
     if (!renderer || !camera || !container) return;
     const rect = container.getBoundingClientRect();
@@ -217,13 +244,12 @@
     window.addEventListener('resize', handleResize);
 
     // touch-action: none keeps touch drags from also scrolling/zooming the
-    // page while orbiting.
+    // page while orbiting. The pointer listeners themselves are attached
+    // per-reveal (attachOrbitListeners, called once showProfile's sweep
+    // settles into an orbit-able view) and detached by reset(), not here —
+    // init() itself only ever runs once.
     container.style.touchAction = 'none';
     container.style.cursor = 'grab';
-    container.addEventListener('pointerdown', onPointerDown);
-    container.addEventListener('pointermove', onPointerMove);
-    container.addEventListener('pointerup', onPointerUp);
-    container.addEventListener('pointercancel', onPointerUp);
 
     requestAnimationFrame(animate);
   }
@@ -254,6 +280,7 @@
 
     currentMesh = new THREE.Mesh(geometry, material);
     scene.add(currentMesh);
+    hasMesh = true;
     return currentMesh;
   }
 
@@ -372,6 +399,7 @@
       // into view.
       orbitActive = true;
       lastDragTime = Date.now();
+      attachOrbitListeners();
 
       revealRafId = null;
     }
@@ -379,32 +407,41 @@
     revealRafId = requestAnimationFrame(frame);
   }
 
-  window.SilhouetteScene = { init, buildMesh, showProfile };
-
-  // --- Debug harness (Tasks 3-5 only) ---
-  //
-  // Independently checkable without depending on js/silhouette.js at all:
-  // a hardcoded literal sample profile, not computed via any shared
-  // function. Task 4 extends this to call showProfile instead of buildMesh
-  // directly; Task 5 reuses it unchanged; Task 6 removes it once real
-  // drawing is wired to the same call.
-  if (typeof window !== 'undefined' && /(?:^|[?&])debug=1(?:&|$)/.test(window.location.search)) {
-    const debugContainer = document.getElementById('silhouette-scene-container');
-    const debugCanvas = document.getElementById('silhouette-draw-canvas');
-    if (debugContainer) {
-      init(debugContainer, debugCanvas);
-      // sampleAxisX is just internally consistent for this debug check
-      // (not derived from a real stroke) — picked away from 0 on purpose
-      // so the ortho-camera alignment fix (camera.left = -axisX * WORLD_SCALE)
-      // actually gets exercised.
-      const sampleAxisX = 100;
-      const sampleProfile = [
-        { radius: 0.15, height: 0 },
-        { radius: 0.45, height: 0.5 },
-        { radius: 0.3, height: 1.1 },
-        { radius: 0.55, height: 2 }
-      ];
-      window.SilhouetteScene.showProfile(sampleProfile, sampleAxisX, DRAW_LOGICAL_SIZE);
+  // Tears down everything specific to the current object so the next
+  // showProfile() call starts clean: cancels any in-flight reveal-sweep
+  // frame (so a stale closure over the old profile can't resurrect it),
+  // removes+disposes the mesh, detaches the drag-orbit listeners, and
+  // resets orbit/drag runtime state — including restoring orbitAzimuth/
+  // orbitElevation to their initial defaults, so every new reveal starts
+  // from the same predictable camera angle rather than wherever the
+  // previous object's orbit/idle-spin left off. The renderer/scene/camera/
+  // lights themselves are left alive and reused.
+  function reset() {
+    if (revealRafId !== null) {
+      cancelAnimationFrame(revealRafId);
+      revealRafId = null;
     }
+
+    if (currentMesh) {
+      if (scene) scene.remove(currentMesh);
+      currentMesh.geometry.dispose();
+      currentMesh.material.dispose();
+      currentMesh = null;
+    }
+    hasMesh = false;
+
+    detachOrbitListeners();
+    orbitActive = false;
+    isPointerDown = false;
+    activePointerId = null;
+    lastDragTime = 0;
+    orbitAzimuth = ORBIT_AZIMUTH_DEFAULT;
+    orbitElevation = ORBIT_ELEVATION_DEFAULT;
   }
+
+  function hasObject() {
+    return hasMesh;
+  }
+
+  window.SilhouetteScene = { init, buildMesh, showProfile, reset, hasObject };
 })();
